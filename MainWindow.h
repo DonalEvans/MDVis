@@ -42,7 +42,7 @@ private slots:
 
 private:
 
-     QVector<Atom*> &getAtomVectorRef();
+     QVector<Atom*>& getAtomVectorRef();
 
      void setAtomVector(QVector<Atom*> atomVector);
 
