@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/">
+        <file>shaders/points.frag</file>
+        <file>shaders/points.vert</file>
+        <file>shaders/paths.vert</file>
+        <file>shaders/paths.frag</file>
+    </qresource>
+</RCC>
