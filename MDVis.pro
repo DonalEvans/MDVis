@@ -22,7 +22,8 @@ SOURCES += main.cpp\
     xdrfile_xtc.c \
     MyOpenGLWidget.cpp \
     Vertex.cpp \
-    ColourLegend.cpp
+    ColourLegend.cpp \
+    test.cpp
 
 HEADERS  += MainWindow.h \
     Atom.h \
