@@ -5,17 +5,17 @@
 #include <QFile>
 #include <QTextStream>
 
-QVector<Atom *> &MainWindow::getAtomVectorRef()
+QVector<Atom*>& MainWindow::getAtomVectorRef()
 {
     return m_AtomVector;
 }
 
-void MainWindow::setAtomVector(QVector<Atom *> atomVector)
+void MainWindow::setAtomVector(QVector<Atom*> atomVector)
 {
     m_AtomVector = atomVector;
 }
 
-QVector<Residue *> &MainWindow::getResidueVectorRef()
+QVector<Residue*>& MainWindow::getResidueVectorRef()
 {
     return m_ResidueVector;
 }
