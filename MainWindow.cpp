@@ -20,7 +20,7 @@ QVector<Residue*>& MainWindow::getResidueVectorRef()
     return m_ResidueVector;
 }
 
-void MainWindow::setResidueVector(QVector<Residue *> residueVector)
+void MainWindow::setResidueVector(QVector<Residue*> residueVector)
 {
     m_ResidueVector = residueVector;
 }
