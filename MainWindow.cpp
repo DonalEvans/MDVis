@@ -131,10 +131,6 @@ void MainWindow::mapColour()
     QVector<Vertex> trajVertex;
     for (int i = 0; i < m_FilteredPos.length(); ++i)
     {
-        if (i > 222500)
-        {
-            printString(QString::number(i),0);
-        }
         for (int j = 0; j < m_FilteredPos[i].length(); ++j)
         {
             zPos = m_FilteredPos[i][j].z() - m_MinZ;
