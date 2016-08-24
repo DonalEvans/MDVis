@@ -29,6 +29,11 @@ public:
      */
     void SetTrajectory(QVector<QVector<QVector3D>> traj);
 
+    /**
+     * @brief Setter for the Vertex data that is to be used in drawing.
+     * @param vertices A 2-dimensional QVector containing @Vertex objects for
+     * each time step, for each atom.
+     */
     void SetVertices(QVector<QVector<Vertex>> vertices);
 
     /**
@@ -80,6 +85,16 @@ public slots:
      */
     void SetFrame(int frame);
 
+    /**
+     * @brief Setter for whether or not OpenGL buffers will be used to draw.
+     * @param useBuffers True if OpenGL buffers are to be used to draw.
+     */
+    void SetUseBuffers(bool useBuffers);
+
+    /**
+     * @brief Setter for the zoom level.
+     * @param zoom The percentage zoom level as an integer.
+     */
     void SetZoom(int zoom);
 
 
@@ -103,6 +118,29 @@ protected:
     void resizeGL(int w, int h);
 
 private:
+    /**
+     * @brief Setter for the mouse x position value on mouse click.
+     * @param LastX The x position of the mouse on mouse click.
+     */
+    void setLastX(float LastX);
+
+    /**
+     * @brief Setter for the mouse y position value on mouse click.
+     * @param LastY The y position of the mouse on mouse click.
+     */
+    void setLastY(float LastY);
+
+    /**
+     * @brief Setter for if panning is occurring.
+     * @param panning
+     */
+    void setPan(bool panning);
+
+    /**
+     * @brief Setter for if rotation is occurring.
+     * @param rotating
+     */
+    void setRotate(bool rotating);
 
     /**
      * @brief Uses the vertex data stored in the circle buffer to draw atom 
@@ -122,44 +160,69 @@ private:
      */
     void drawPoints();
 
-    void drawPoints2();
-
     /**
-     * @brief Given the center of a circle, generates 12 3D coordinates 
-     * representing points around the circumference.
+     * @brief Given the center of a circle, generates 8 3D coordinates
+     * representing points required to draw a circle using GL_TRIANGLE_FAN.
      * @param center The 3D coordinates of the center of the circle.
      * @return A QVector of 3D coordinates representing the center of the
-     * circle followed by 12 points around the circumference.
+     * circle followed by 7 points around the circumference.
      */
     QVector<QVector3D> getCircleVertices(QVector3D center);
 
+    /**
+     * @brief Given the center of a circle, generates 8 @Vertex objects
+     * representing points required to draw a circle using GL_TRIANGLE_FAN.
+     * @param center The @Vertex representing the center of the circle.
+     * @return A QVector of @Vertex objects representing the center of the
+     * circle followed by 7 points around the circumference.
+     */
     QVector<Vertex> getCircleVertices(Vertex center);
 
     /**
-     * @brief The buffer in which vertices required to draw circles are stored.
+     * @brief Handles behaviour on mouse movement.
+     * @param event
      */
-    QOpenGLBuffer m_CircleBuffer;
-    
+    virtual void mouseMoveEvent(QMouseEvent *event);
+
     /**
-     * @brief The shader program used for drawing atom paths.
+     * @brief Handles behaviour on mouse button press.
+     * @param event
      */
-    QOpenGLShaderProgram* m_PathProgram;
-    
+    virtual void mousePressEvent(QMouseEvent *event);
+
     /**
-     * @brief The shader program used for drawing atom positions at points.
+     * @brief Handles behaviour on mouse button release.
+     * @param event
      */
-    QOpenGLShaderProgram* m_PointProgram;
-    
+    virtual void mouseReleaseEvent(QMouseEvent *event);
+
     /**
-     * @brief The buffer in which vertices used for drawing points and paths
-     * are stored.
+     * @brief Rotates a point about an axis fixed in space.
+     * @param point The point to be rotated in 3D coordinates.
+     * @param origin The origin of the space in which the point lies.
+     * @param direction The vector about which the point will be rotated.
+     * @param angle The angle by which the point will be rotated.
+     * @return A QVector3D representing the new coordinates of the point.
      */
-    QOpenGLBuffer m_TrajBuffer;
+    QVector3D rotatePoint(QVector3D point,
+                          QVector3D origin,
+                          QVector3D direction,
+                          float angle);
     
     /**
      * @brief The number of atoms currently being drawn.
      */
     int m_Atoms;
+
+    /**
+     * @brief The vector representing the center position in gluLookat().
+     */
+    QVector3D m_Center = {58,58,5};
+
+    /**
+     * @brief The buffer in which vertices required to draw circles are stored.
+     */
+    QOpenGLBuffer m_CircleBuffer;
     
     /**
      * @brief The radius of circles to be drawn.
@@ -180,11 +243,56 @@ private:
      * @brief Flag determining if postition points are to be drawn.
      */
     bool m_DrawPoints = false;
-    
+
+    /**
+     * @brief The vector representing the eye position in gluLookat().
+     */
+    QVector3D m_Eye = {58,58,-120};
+
+    /**
+     * @brief The far clipping plane.
+     */
+    float m_Far = 2;
+
     /**
      * @brief The frame of data for which positions are being drawn.
      */
     int m_Frame = 0;
+
+    /**
+     * @brief The X position of the mouse at the beginning of a movement event.
+     */
+    float m_LastX;
+
+    /**
+     * @brief The Y position of the mouse at the beginning of a movement event.
+     */
+    float m_LastY;
+
+    /**
+     * @brief The near clipping plane.
+     */
+    float m_Near = 0;
+
+    /**
+     * @brief True if panning is occurring, false otherwise.
+     */
+    bool m_IsPanning;
+
+    /**
+     * @brief The shader program used for drawing atom paths.
+     */
+    QOpenGLShaderProgram* m_PathProgram;
+
+    /**
+     * @brief The shader program used for drawing atom positions at points.
+     */
+    QOpenGLShaderProgram* m_PointProgram;
+
+    /**
+     * @brief True if rotation is occurring, false otherwise.
+     */
+    bool m_IsRotating;
     
     /**
      * @brief The total number of frames in the data.
@@ -196,14 +304,42 @@ private:
      */
     QVector<QVector<QVector3D>> m_Traj;
 
+    /**
+     * @brief The buffer in which vertices used for drawing points and paths
+     * are stored.
+     */
+    QOpenGLBuffer m_TrajBuffer;
+
+    /**
+     * @brief The vector indicating the up direction in gluLookat().
+     */
+    QVector3D m_Up = {0,1,0};
+
+    /**
+     * @brief Determines how objects will be drawn; either using OpenGL buffers
+     * or reading in vertex data every time PaintGL is called.
+     */
+    bool m_UseBuffers = false;
+
+    /**
+     * @brief The @Vertex objects for each @Atom at each time step of the data.
+     */
     QVector<QVector<Vertex>> m_Vertices;
 
-    float m_Zoom;
+    /**
+     * @brief The zoom to be applied to the image, as a fraction.
+     */
+    float m_Zoom = 1.0;
     
     /**
-     * @brief The number of vertices retured by @getCircleVertices.
+     * @brief The number of vertices retured by @getCircleVertices().
      */
     const int CIRCLE_VERTICES = 8;
+
+    /**
+     * @brief The FOV used in gluPerspective() in radians.
+     */
+    const float FOV = 0.88;
     
     /**
      * @brief The square root of 3, used in calculating circle vertices.

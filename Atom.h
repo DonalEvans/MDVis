@@ -14,35 +14,9 @@
 #include <QVector>
 #include <QVector3D>
 
-struct AtomStepData
-{
-    QVector3D position;
-    QVector3D velocity;
-    float pathLength;
-    float pathCurvature;
-    float stepTime;
-};
-
 class Atom
 {
 public:
-
-    /**
-     * @brief Getter for the Atom data for all time steps.
-     * @return A vector containing pointers to structs containing the
-     * position, velocity, cumulative path length and cumulative path
-     * curvature for each time step.
-     */
-    QVector<AtomStepData*>& GetAtomDataRef();
-
-    /**
-     * @brief Getter for the Atom data for time step @e step.
-     * @param step The time step for which the data will be returned.
-     * @return A pointer to a struct containing the position, velocity,
-     * cumulative path length and cumulative path curvature for the given step.
-     */
-    AtomStepData* GetAtomStepDataPtr(int step);
-
     /**
      * @brief Getter for the Atom name.
      * @return The Atom name as a QString.
@@ -179,23 +153,6 @@ public:
     static const int GRO_FIELD_SIZE = 5;
 
 private:
-
-    /**
-     * @brief Setter for the Atom data.
-     * @param atomData The position, velocity, cumulative path length and
-     *        cumulative path curvature for all steps.
-     */
-    void setAtomData(QVector<AtomStepData*> atomData);
-
-    /**
-     * @brief Setter for one time step of Atom data.
-     * @param atomStepData The position, velocity, cumulative path length and
-     *        cumulative path curvature for the given step.
-     * @param step The time step at which to set these data.
-     */
-    void setAtomStepData(AtomStepData* atomStepData,
-                                int step);
-
     /**
      * @brief Setter for the ID of the Residue to which this Atom belongs.
      * @param parentResidueID The ID of the Residue to which this Atom belongs.
@@ -242,8 +199,6 @@ private:
      * path curvature for the Atom for all time steps.
      */
     void calculateAtomData();
-
-    QVector<AtomStepData*> m_AtomData;
 
     /**
      * @brief m_AtomName The name of the Atom.

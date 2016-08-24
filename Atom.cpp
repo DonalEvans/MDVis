@@ -2,26 +2,6 @@
 #include <math.h>
 #include <QTextStream>
 
-QVector<AtomStepData *> &Atom::GetAtomDataRef()
-{
-    return m_AtomData;
-}
-
-void Atom::setAtomData(QVector<AtomStepData *> atomData)
-{
-    m_AtomData = atomData;
-}
-
-AtomStepData *Atom::GetAtomStepDataPtr(int step)
-{
-    return m_AtomData[step];
-}
-
-void Atom::setAtomStepData(AtomStepData *atomStepData, int step)
-{
-    m_AtomData[step] = atomStepData;
-}
-
 QString Atom::GetAtomName()
 {
     return m_AtomName;

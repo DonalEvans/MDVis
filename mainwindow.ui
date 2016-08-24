@@ -140,10 +140,13 @@
            </size>
           </property>
           <property name="minimum">
-           <number>25</number>
+           <number>50</number>
           </property>
           <property name="maximum">
-           <number>1000</number>
+           <number>5000</number>
+          </property>
+          <property name="pageStep">
+           <number>100</number>
           </property>
           <property name="value">
            <number>100</number>
@@ -162,10 +165,10 @@
         <item>
          <widget class="QSpinBox" name="zoomLevel">
           <property name="minimum">
-           <number>25</number>
+           <number>50</number>
           </property>
           <property name="maximum">
-           <number>1000</number>
+           <number>5000</number>
           </property>
           <property name="value">
            <number>100</number>
@@ -184,6 +187,16 @@
            </size>
           </property>
          </spacer>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="m_UseBuffers">
+          <property name="text">
+           <string>Draw Using Buffers</string>
+          </property>
+          <property name="checked">
+           <bool>false</bool>
+          </property>
+         </widget>
         </item>
         <item>
          <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -286,7 +299,7 @@
           <item>
            <widget class="QLineEdit" name="groLineEdit">
             <property name="text">
-             <string>C:/Users/Donal/Desktop/MDVis/Data/chavent15prot.gro</string>
+             <string>C:/Users/Donal/Desktop/MDVis/Data/large_set.gro</string>
             </property>
            </widget>
           </item>
@@ -304,7 +317,7 @@
           <item>
            <widget class="QLineEdit" name="xtcLineEdit">
             <property name="text">
-             <string>C:/Users/Donal/Desktop/MDVis/Data/chavent15prot_800_810.xtc</string>
+             <string>C:/Users/Donal/Desktop/MDVis/Data/large_set.xtc</string>
             </property>
            </widget>
           </item>

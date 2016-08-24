@@ -1,5 +1,8 @@
 #include "MyOpenGLWidget.h"
 #include "GL/glu.h"
+#include "math.h"
+#include <QMouseEvent>
+#include <QtMath>
 
 void MyOpenGLWidget::SetCircleRadius(int radius)
 {
@@ -35,8 +38,34 @@ void MyOpenGLWidget::SetFrame(int frame)
     m_Frame = frame;
     if (m_DrawCircles)
     {
-        CreateCirclesBuffer();
+//        CreateCirclesBuffer();
     }
+    update();
+}
+
+void MyOpenGLWidget::setLastY(float LastY)
+{
+    m_LastY = LastY;
+}
+
+void MyOpenGLWidget::setLastX(float LastX)
+{
+    m_LastX = LastX;
+}
+
+void MyOpenGLWidget::setPan(bool panning)
+{
+    m_IsPanning = panning;
+}
+
+void MyOpenGLWidget::setRotate(bool rotating)
+{
+    m_IsRotating = rotating;
+}
+
+void MyOpenGLWidget::SetUseBuffers(bool useBuffers)
+{
+    m_UseBuffers = useBuffers;
     update();
 }
 
@@ -67,10 +96,6 @@ MyOpenGLWidget::MyOpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
 
 void MyOpenGLWidget::initializeGL()
 {
-//    glEnable(GL_DEPTH_TEST);
-//    glEnable(GL_LIGHT0);
-//    glEnable(GL_LIGHTING);
-//    glEnable(GL_COLOR_MATERIAL);
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
     m_PointProgram = new QOpenGLShaderProgram();
@@ -101,19 +126,20 @@ void MyOpenGLWidget::resizeGL(int w, int h)
 
 void MyOpenGLWidget::paintGL()
 {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT);
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-//    glFrustum(0,116,0,116,0,20);
-//    glFrustum(-0.1,0.1,-0.1,0.1,0,2);
-    gluPerspective(90*m_Zoom,(float)this->width()/(float)this->height(),0,2);
+    gluPerspective(qRadiansToDegrees(FOV)*m_Zoom,
+                   (float)this->width()/(float)this->height(),
+                   m_Near,
+                   m_Far);
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-
-//    gluLookAt(58,0,5,58,58,5,0,0,1);
-    gluLookAt(0,-2,0.5, 0,0,0.5, 0,0,1);
+    gluLookAt(m_Eye.x(),m_Eye.y(),m_Eye.z(),
+              m_Center.x(),m_Center.y(),m_Center.z(),
+              m_Up.x(),m_Up.y(),m_Up.z());
 
     if(m_DrawPaths)
     {
@@ -127,15 +153,7 @@ void MyOpenGLWidget::paintGL()
         }
         else
         {
-            glBegin(GL_POINTS);
-            for (int i = 0; i < m_Atoms; ++i)
-            {
-                QVector3D pos = m_Vertices[i][m_Frame].GetPosition();
-                QVector3D colour = m_Vertices[i][m_Frame].GetColour();
-                glColor3f(colour.x(), colour.y(), colour.z());
-                glVertex3f(pos.x(), pos.y(), pos.z());
-            }
-            glEnd();
+            drawPoints();
         }
     }
 }
@@ -167,25 +185,6 @@ void MyOpenGLWidget::CreateCirclesBuffer()
 
 void MyOpenGLWidget::CreateTrajBuffer()
 {
-//    QOpenGLWidget::makeCurrent();
-
-//    m_Atoms = m_Traj.length();
-//    m_TotalFrames = m_Traj[0].length();
-
-//    m_TrajBuffer.bind();
-//    m_TrajBuffer.setUsagePattern(QOpenGLBuffer::StaticDraw);
-//    m_TrajBuffer.allocate(sizeof(m_Traj[0][0])*m_Atoms*m_TotalFrames);
-
-//    int offset = sizeof(m_Traj[0][0])*m_TotalFrames;
-
-//    for (int i = 0; i < m_Atoms; ++i)
-//    {
-//        m_TrajBuffer.write(offset*i, m_Traj[i].constData(), offset);
-//    }
-
-//    m_TrajBuffer.release();
-//    QOpenGLWidget::doneCurrent();
-
     QOpenGLWidget::makeCurrent();
 
     m_Atoms = m_Vertices.length();
@@ -232,97 +231,88 @@ void MyOpenGLWidget::drawCircles()
 
 void MyOpenGLWidget::drawPaths()
 {
-//    m_PathProgram->bind();
-//    m_TrajBuffer.bind();
-
-//    m_PathProgram->enableAttributeArray(0);
-//    m_PathProgram->setAttributeBuffer(0, GL_FLOAT, 0, TUPLE_SIZE_3D, 0);
-
-//    glLineWidth(1.0f);
-//    for (int i = 0; i < m_Atoms; ++i)
-//    {
-//        glDrawArrays(GL_LINE_STRIP, i*m_TotalFrames, m_TotalFrames);
-//    }
-
-//    m_TrajBuffer.release();
-//    m_PathProgram->release();
-
-    m_PathProgram->bind();
-    m_TrajBuffer.bind();
-
-    m_PathProgram->enableAttributeArray(0);
-    m_PathProgram->enableAttributeArray(1);
-    m_PathProgram->setAttributeBuffer(0, GL_FLOAT,
-                                      Vertex::PositionOffset(),
-                                      Vertex::TUPLE_SIZE,
-                                      Vertex::Stride());
-    m_PathProgram->setAttributeBuffer(1, GL_FLOAT,
-                                      Vertex::ColourOffset(),
-                                      Vertex::TUPLE_SIZE,
-                                      Vertex::Stride());
-
-
-    glLineWidth(1.0f);
-    for (int i = 0; i < m_Atoms; ++i)
+    if(m_UseBuffers)
     {
-        glDrawArrays(GL_LINE_STRIP, i*m_TotalFrames, m_TotalFrames);
-    }
+        m_PathProgram->bind();
+        m_TrajBuffer.bind();
 
-    m_TrajBuffer.release();
-    m_PathProgram->release();
+        m_PathProgram->enableAttributeArray(0);
+        m_PathProgram->enableAttributeArray(1);
+        m_PathProgram->setAttributeBuffer(0, GL_FLOAT,
+                                          Vertex::PositionOffset(),
+                                          Vertex::TUPLE_SIZE,
+                                          Vertex::Stride());
+        m_PathProgram->setAttributeBuffer(1, GL_FLOAT,
+                                          Vertex::ColourOffset(),
+                                          Vertex::TUPLE_SIZE,
+                                          Vertex::Stride());
+
+        glLineWidth(1.0f);
+        for (int i = 0; i < m_Atoms; ++i)
+        {
+            glDrawArrays(GL_LINE_STRIP, i*m_TotalFrames, m_TotalFrames);
+        }
+
+        m_TrajBuffer.release();
+        m_PathProgram->release();
+    }
+    else
+    {
+        for (int i = 0 ; i < m_Atoms; ++i)
+        {
+            glBegin(GL_LINE_STRIP);
+            for (int j = 0; j < m_TotalFrames; ++j)
+            {
+                QVector3D pos = m_Vertices[i][j].GetPosition();
+                QVector3D colour = m_Vertices[i][j].GetColour();
+                glColor3f(colour.x(), colour.y(), colour.z());
+                glVertex3f(pos.x(), pos.y(), pos.z());
+            }
+            glEnd();
+        }
+    }
 
 }
 
 void MyOpenGLWidget::drawPoints()
 {
-//    m_PointProgram->bind();
-//    m_TrajBuffer.bind();
-
-//    m_PointProgram->enableAttributeArray(0);
-//    m_PointProgram->setAttributeBuffer(0, GL_FLOAT,
-//                                       m_Frame*sizeof(QVector3D),
-//                                       TUPLE_SIZE_3D,
-//                                       sizeof(QVector3D)*m_TotalFrames);
-
-//    glPointSize(m_CircleRadius);
-//    glDrawArrays(GL_POINTS, 0, m_Atoms);
-
-//    m_TrajBuffer.release();
-//    m_PointProgram->release();
-
-    m_PointProgram->bind();
-    m_TrajBuffer.bind();
-
-    int frameOffset = m_Frame*Vertex::Stride();
-    m_PointProgram->enableAttributeArray(0);
-    m_PointProgram->enableAttributeArray(1);
-    m_PointProgram->setAttributeBuffer(0, GL_FLOAT,
-                                       frameOffset + Vertex::PositionOffset(),
-                                       Vertex::TUPLE_SIZE,
-                                       Vertex::Stride()*m_TotalFrames);
-    m_PointProgram->setAttributeBuffer(1, GL_FLOAT,
-                                       frameOffset + Vertex::ColourOffset(),
-                                       Vertex::TUPLE_SIZE,
-                                       Vertex::Stride()*m_TotalFrames);
-
-    glPointSize(m_CircleRadius);
-    glDrawArrays(GL_POINTS, 0, m_Atoms);
-
-    m_TrajBuffer.release();
-    m_PointProgram->release();
-}
-
-void MyOpenGLWidget::drawPoints2()
-{
-    glBegin(GL_POINTS);
-    for (int i = 0; i < m_Atoms; ++i)
+    if (m_UseBuffers)
     {
-        QVector3D pos = m_Vertices[i][m_Frame].GetPosition();
-        QVector3D colour = m_Vertices[i][m_Frame].GetColour();
-        glColor3f(colour.x(), colour.y(), colour.z());
-        glVertex3f(pos.x(), pos.y(), pos.z());
+        m_PointProgram->bind();
+        m_TrajBuffer.bind();
+
+        int frameOffset = m_Frame*Vertex::Stride();
+        m_PointProgram->enableAttributeArray(0);
+        m_PointProgram->enableAttributeArray(1);
+        m_PointProgram->setAttributeBuffer(0, GL_FLOAT,
+                                           frameOffset + Vertex::PositionOffset(),
+                                           Vertex::TUPLE_SIZE,
+                                           Vertex::Stride()*m_TotalFrames);
+        m_PointProgram->setAttributeBuffer(1, GL_FLOAT,
+                                           frameOffset + Vertex::ColourOffset(),
+                                           Vertex::TUPLE_SIZE,
+                                           Vertex::Stride()*m_TotalFrames);
+
+        glPointSize(m_CircleRadius);
+
+        glDrawArrays(GL_POINTS, 0, m_Atoms);
+
+        m_TrajBuffer.release();
+        m_PointProgram->release();
     }
-    glEnd();
+    else
+    {
+        glPointSize(m_CircleRadius);
+        glBegin(GL_POINTS);
+        for (int i = 0; i < m_Atoms; ++i)
+        {
+            QVector3D pos = m_Vertices[i][m_Frame].GetPosition();
+            QVector3D colour = m_Vertices[i][m_Frame].GetColour();
+            glColor3f(colour.x(), colour.y(), colour.z());
+            glVertex3f(pos.x(), pos.y(), pos.z());
+        }
+        glEnd();
+    }
 }
 
 QVector<QVector3D> MyOpenGLWidget::getCircleVertices(QVector3D center)
@@ -376,3 +366,76 @@ QVector<Vertex> MyOpenGLWidget::getCircleVertices(Vertex center)
     return vertices;
 }
 
+void MyOpenGLWidget::mouseMoveEvent(QMouseEvent *event)
+{
+    float width = this->width();
+    float height = this->height();
+    float dx = (event->x() - m_LastX)/width;
+    float dy = (event->y() - m_LastY)/height;
+
+    QVector3D dir_x = m_Up;
+    QVector3D temp = QVector3D::crossProduct(m_Up, m_Center - m_Eye);
+    QVector3D dir_y = temp/temp.length();
+
+    if (m_IsPanning)
+    {
+        float length = 2*(m_Eye - m_Center).length()*qTan(FOV/2);
+        m_Center += m_Zoom*dir_y*dx*length*width/height
+                  + m_Zoom*dir_x*dy*length;
+
+    }
+    else if (m_IsRotating)
+    {
+        m_Eye = rotatePoint(m_Eye, m_Center, dir_x, -dx*M_PI);
+        m_Eye = rotatePoint(m_Eye, m_Center, dir_y, dy*M_PI);
+        m_Up = rotatePoint(m_Center+m_Up, m_Center, dir_x, dy*M_PI) - m_Center;
+        m_Up.normalize();
+    }
+
+    update();
+
+    setLastX(event->x());
+    setLastY(event->y());
+
+}
+
+void MyOpenGLWidget::mousePressEvent(QMouseEvent *event)
+{
+    setLastX(event->x());
+    setLastY(event->y());
+    if (event->button() == Qt::LeftButton)
+    {
+        setPan(true);
+    }
+    else if (event->button() == Qt::RightButton)
+    {
+        setRotate(true);
+    }
+}
+
+void MyOpenGLWidget::mouseReleaseEvent(QMouseEvent *event)
+{
+    setPan(false);
+    setRotate(false);
+
+    update();
+}
+
+QVector3D MyOpenGLWidget::rotatePoint(QVector3D point,
+                                      QVector3D origin,
+                                      QVector3D direction,
+                                      float angle)
+{
+    float sin = qSin(angle);
+    float cos = qCos(angle);
+    float val = 1 - cos;
+    float x = direction.x();
+    float y = direction.y();
+    float z = direction.z();
+    QMatrix4x4 rotMatrix = {x*x*val+cos,   x*y*val-x*sin, x*z*val+y*sin, 0,
+                            y*x*val+x*sin, y*y*val+cos,   y*z*val-x*sin, 0,
+                            z*x*val-y*sin, z*y*val+x*sin, z*z*val+cos,   0,
+                            0,0,0,1};
+
+    return origin + rotMatrix.map(point-origin);
+}

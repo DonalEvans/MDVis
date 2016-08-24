@@ -26,6 +26,7 @@ public:
 
 private:
     QVector3D m_Position;
+
     QVector3D m_Colour;
 };
 

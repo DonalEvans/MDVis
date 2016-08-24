@@ -56,6 +56,8 @@ MainWindow::MainWindow(QWidget* parent) :
                      this, SLOT(calculateFPS()));
     QObject::connect(ui->zoomLevel, SIGNAL(valueChanged(int)),
                      ui->m_OpenGLWidget, SLOT(SetZoom(int)));
+    QObject::connect(ui->m_UseBuffers, SIGNAL(toggled(bool)),
+                     ui->m_OpenGLWidget, SLOT(SetUseBuffers(bool)));
 }
 
 MainWindow::~MainWindow()
@@ -88,12 +90,6 @@ void MainWindow::drawNextFrame()
 void MainWindow::filter()
 {
     printString("Filtering atoms...",0);
-    float scalingY = m_FileReader->GetSimBoxRef().y();
-    float scalingZ = m_FileReader->GetSimBoxRef().z();
-
-    QVector3D offset(scalingY/2,scalingY/2,0);
-    QVector3D scale((scalingY + 5)/2,(scalingY + 5)/2,scalingZ);
-    QVector3D pos;
     QVector<QVector3D> traj;
 
     bool condition = true;
@@ -108,24 +104,21 @@ void MainWindow::filter()
             QVector<QVector3D> posData = currAtom->GetTrajectoryRef();
             for (int j = 0; j < posData.length(); ++j)
             {
-                pos = (posData[j]- offset)/scale;
-//                pos = posData[j];
-                if (pos.z() < m_MinZ)
+                if (posData[j].z() < m_MinZ)
                 {
-                    m_MinZ = pos.z();
+                    m_MinZ = posData[j].z();
                 }
-                else if (pos.z() > m_MaxZ)
+                else if (posData[j].z() > m_MaxZ)
                 {
-                    m_MaxZ = pos.z();
+                    m_MaxZ = posData[j].z();
                 }
-                traj.append(pos);
+                traj.append(posData[j]);
             }
             m_FilteredPos.append(traj);
             traj.clear();
         }
     }
     printString("Filtering complete!",0);
-//    ui->m_OpenGLWidget->SetTrajectory(m_FilteredPos);
 }
 
 void MainWindow::mapColour()
@@ -138,10 +131,10 @@ void MainWindow::mapColour()
     QVector<Vertex> trajVertex;
     for (int i = 0; i < m_FilteredPos.length(); ++i)
     {
-//        if (i > 222800)
-//        {
-//            printString(QString::number(i),0);
-//        }
+        if (i > 222500)
+        {
+            printString(QString::number(i),0);
+        }
         for (int j = 0; j < m_FilteredPos[i].length(); ++j)
         {
             zPos = m_FilteredPos[i][j].z() - m_MinZ;
