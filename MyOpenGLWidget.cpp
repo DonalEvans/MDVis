@@ -98,48 +98,44 @@ void MyOpenGLWidget::initializeGL()
 {
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
-    m_PointProgram = new QOpenGLShaderProgram();
-    m_PointProgram->bind();
-    m_PointProgram->addShaderFromSourceFile(QOpenGLShader::Vertex,
+    m_Program = new QOpenGLShaderProgram();
+    m_Program->bind();
+    m_Program->addShaderFromSourceFile(QOpenGLShader::Vertex,
                                             ":/shaders/points.vert");
-    m_PointProgram->addShaderFromSourceFile(QOpenGLShader::Fragment,
+    m_Program->addShaderFromSourceFile(QOpenGLShader::Fragment,
                                             ":/shaders/points.frag");
-    m_PointProgram->link();
-    m_PointProgram->release();
+    m_Program->link();
+    m_ModelToWorld = m_Program->uniformLocation("modelToWorld");
+    m_WorldToView = m_Program->uniformLocation("worldToView");
+    m_Program->release();
 
-    m_PathProgram = new QOpenGLShaderProgram();
-    m_PathProgram->bind();
-    m_PathProgram->addShaderFromSourceFile(QOpenGLShader::Vertex,
-                                           ":/shaders/paths.vert");
-    m_PathProgram->addShaderFromSourceFile(QOpenGLShader::Fragment,
-                                           ":/shaders/paths.frag");
-    m_PathProgram->link();
-    m_PathProgram->release();
     m_TrajBuffer.create();
     m_CircleBuffer.create();
 }
 
 void MyOpenGLWidget::resizeGL(int w, int h)
 {
-
+    m_Projection.setToIdentity();
+    m_Projection.perspective(qRadiansToDegrees(FOV)*m_Zoom, (float)w/(float)h,
+                             m_Near, m_Far);
 }
 
 void MyOpenGLWidget::paintGL()
 {
     glClear(GL_COLOR_BUFFER_BIT);
 
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    gluPerspective(qRadiansToDegrees(FOV)*m_Zoom,
-                   (float)this->width()/(float)this->height(),
-                   m_Near,
-                   m_Far);
+//    glMatrixMode(GL_PROJECTION);
+//    glLoadIdentity();
+//    gluPerspective(qRadiansToDegrees(FOV)*m_Zoom,
+//                   (float)this->width()/(float)this->height(),
+//                   m_Near,
+//                   m_Far);
 
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    gluLookAt(m_Eye.x(),m_Eye.y(),m_Eye.z(),
-              m_Center.x(),m_Center.y(),m_Center.z(),
-              m_Up.x(),m_Up.y(),m_Up.z());
+//    glMatrixMode(GL_MODELVIEW);
+//    glLoadIdentity();
+//    gluLookAt(m_Eye.x(),m_Eye.y(),m_Eye.z(),
+//              m_Center.x(),m_Center.y(),m_Center.z(),
+//              m_Up.x(),m_Up.y(),m_Up.z());
 
     if(m_DrawPaths)
     {
@@ -207,45 +203,45 @@ void MyOpenGLWidget::CreateTrajBuffer()
 
 void MyOpenGLWidget::drawCircles()
 {
-    m_PointProgram->bind();
+    m_Program->bind();
     m_CircleBuffer.bind();
 
-    m_PointProgram->enableAttributeArray(0);
-    m_PointProgram->enableAttributeArray(1);
-    m_PointProgram->setAttributeBuffer(0, GL_FLOAT,
-                                       Vertex::PositionOffset(),
-                                       Vertex::TUPLE_SIZE,
-                                       Vertex::Stride());
-    m_PointProgram->setAttributeBuffer(1, GL_FLOAT,
-                                       Vertex::ColourOffset(),
-                                       Vertex::TUPLE_SIZE,
-                                       Vertex::Stride());
+    m_Program->enableAttributeArray(0);
+    m_Program->enableAttributeArray(1);
+    m_Program->setAttributeBuffer(0, GL_FLOAT,
+                                  Vertex::PositionOffset(),
+                                  Vertex::TUPLE_SIZE,
+                                  Vertex::Stride());
+    m_Program->setAttributeBuffer(1, GL_FLOAT,
+                                  Vertex::ColourOffset(),
+                                  Vertex::TUPLE_SIZE,
+                                  Vertex::Stride());
     for (int i = 0; i < m_Atoms; ++i)
     {
         glDrawArrays(GL_TRIANGLE_FAN, i*CIRCLE_VERTICES, CIRCLE_VERTICES);
     }
 
     m_CircleBuffer.release();
-    m_PointProgram->release();
+    m_Program->release();
 }
 
 void MyOpenGLWidget::drawPaths()
 {
     if(m_UseBuffers)
     {
-        m_PathProgram->bind();
+        m_Program->bind();
         m_TrajBuffer.bind();
 
-        m_PathProgram->enableAttributeArray(0);
-        m_PathProgram->enableAttributeArray(1);
-        m_PathProgram->setAttributeBuffer(0, GL_FLOAT,
-                                          Vertex::PositionOffset(),
-                                          Vertex::TUPLE_SIZE,
-                                          Vertex::Stride());
-        m_PathProgram->setAttributeBuffer(1, GL_FLOAT,
-                                          Vertex::ColourOffset(),
-                                          Vertex::TUPLE_SIZE,
-                                          Vertex::Stride());
+        m_Program->enableAttributeArray(0);
+        m_Program->enableAttributeArray(1);
+        m_Program->setAttributeBuffer(0, GL_FLOAT,
+                                      Vertex::PositionOffset(),
+                                      Vertex::TUPLE_SIZE,
+                                      Vertex::Stride());
+        m_Program->setAttributeBuffer(1, GL_FLOAT,
+                                      Vertex::ColourOffset(),
+                                      Vertex::TUPLE_SIZE,
+                                      Vertex::Stride());
 
         glLineWidth(1.0f);
         for (int i = 0; i < m_Atoms; ++i)
@@ -254,7 +250,7 @@ void MyOpenGLWidget::drawPaths()
         }
 
         m_TrajBuffer.release();
-        m_PathProgram->release();
+        m_Program->release();
     }
     else
     {
@@ -278,27 +274,30 @@ void MyOpenGLWidget::drawPoints()
 {
     if (m_UseBuffers)
     {
-        m_PointProgram->bind();
+        m_Program->bind();
         m_TrajBuffer.bind();
 
         int frameOffset = m_Frame*Vertex::Stride();
-        m_PointProgram->enableAttributeArray(0);
-        m_PointProgram->enableAttributeArray(1);
-        m_PointProgram->setAttributeBuffer(0, GL_FLOAT,
-                                           frameOffset + Vertex::PositionOffset(),
-                                           Vertex::TUPLE_SIZE,
-                                           Vertex::Stride()*m_TotalFrames);
-        m_PointProgram->setAttributeBuffer(1, GL_FLOAT,
-                                           frameOffset + Vertex::ColourOffset(),
-                                           Vertex::TUPLE_SIZE,
-                                           Vertex::Stride()*m_TotalFrames);
+        m_Program->enableAttributeArray(0);
+        m_Program->enableAttributeArray(1);
+        m_Program->setAttributeBuffer(0, GL_FLOAT,
+                                      frameOffset + Vertex::PositionOffset(),
+                                      Vertex::TUPLE_SIZE,
+                                      Vertex::Stride()*m_TotalFrames);
+        m_Program->setAttributeBuffer(1, GL_FLOAT,
+                                      frameOffset + Vertex::ColourOffset(),
+                                      Vertex::TUPLE_SIZE,
+                                      Vertex::Stride()*m_TotalFrames);
+
+        m_Program->setUniformValue(m_WorldToView, m_Projection);
+        m_Program->setUniformValue(m_ModelToWorld, m_Transform.ToMatrix());
 
         glPointSize(m_CircleRadius);
 
         glDrawArrays(GL_POINTS, 0, m_Atoms);
 
         m_TrajBuffer.release();
-        m_PointProgram->release();
+        m_Program->release();
     }
     else
     {

@@ -11,9 +11,9 @@
 #define MYOPENGLWIDGET_H
 
 #include "Vertex.h"
+#include "Transform3D.h"
 #include <QOpenGLWidget>
 #include <QOpenGLBuffer>
-#include <QOpenGLVertexArrayObject>
 #include <QOpenGLFunctions>
 #include <QOpenGLShaderProgram>
 
@@ -260,6 +260,16 @@ private:
     int m_Frame = 0;
 
     /**
+     * @brief True if panning is occurring, false otherwise.
+     */
+    bool m_IsPanning;
+
+    /**
+     * @brief True if rotation is occurring, false otherwise.
+     */
+    bool m_IsRotating;
+
+    /**
      * @brief The X position of the mouse at the beginning of a movement event.
      */
     float m_LastX;
@@ -270,35 +280,36 @@ private:
     float m_LastY;
 
     /**
+     * @brief The uniform location within the shader files of the model to
+     * world transformation matrix.
+     */
+    int m_ModelToWorld;
+
+    /**
      * @brief The near clipping plane.
      */
     float m_Near = 0;
 
     /**
-     * @brief True if panning is occurring, false otherwise.
+     * @brief The shader program used for drawing.
      */
-    bool m_IsPanning;
+    QOpenGLShaderProgram* m_Program;
 
     /**
-     * @brief The shader program used for drawing atom paths.
+     * @brief The projection matrix to be used.
      */
-    QOpenGLShaderProgram* m_PathProgram;
-
-    /**
-     * @brief The shader program used for drawing atom positions at points.
-     */
-    QOpenGLShaderProgram* m_PointProgram;
-
-    /**
-     * @brief True if rotation is occurring, false otherwise.
-     */
-    bool m_IsRotating;
+    QMatrix4x4 m_Projection;
     
     /**
      * @brief The total number of frames in the data.
      */
     int m_TotalFrames;
     
+    /**
+     * @brief The Transform3D object to be used for handling transformations.
+     */
+    Transform3D m_Transform;
+
     /**
      * @brief The trajectory verctors for each atom.
      */
@@ -325,6 +336,12 @@ private:
      * @brief The @Vertex objects for each @Atom at each time step of the data.
      */
     QVector<QVector<Vertex>> m_Vertices;
+
+    /**
+     * @brief The uniform location within the shader files of the world to
+     * view transformation matrix.
+     */
+    int m_WorldToView;
 
     /**
      * @brief The zoom to be applied to the image, as a fraction.

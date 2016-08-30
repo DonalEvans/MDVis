@@ -22,7 +22,8 @@ SOURCES += main.cpp\
     xdrfile_xtc.c \
     MyOpenGLWidget.cpp \
     Vertex.cpp \
-    ColourLegend.cpp
+    ColourLegend.cpp \
+    Transform3D.cpp
 
 HEADERS  += MainWindow.h \
     Atom.h \
@@ -32,7 +33,8 @@ HEADERS  += MainWindow.h \
     xdrfile_xtc.h \
     MyOpenGLWidget.h \
     Vertex.h \
-    ColourLegend.h
+    ColourLegend.h \
+    Transform3D.h
 
 FORMS    += mainwindow.ui
 
