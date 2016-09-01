@@ -1,22 +1,28 @@
 /**
- * @file Transform3D.h
+ * @file Camera3D.h
  * @author Donal Evans
- * @date 26 Aug 2016
- * @brief This class generates a 4x4 transformation matrix.
+ * @date 31 Aug 2016
+ * @brief This class handles Camera3D movement.
  *
  * Detailed description goes here
  */
 
-#ifndef TRANSFORM3D_H
-#define TRANSFORM3D_H
+#ifndef CAMERA3D_H
+#define CAMERA3D_H
 
 #include <QVector3D>
 #include <QQuaternion>
 #include <QMatrix4x4>
 
-class Transform3D
+class Camera3D
 {
 public:
+    /**
+     * @brief Setter for the default view matrix.
+     * @param defaultView The QMatrix4x4 to be used as the default view.
+     */
+    void SetDefaultView(QMatrix4x4 defaultView);
+
     /**
      * @brief Setter for the transformation matrix.
      * @param matrix The new value for the transformation matrix.
@@ -36,18 +42,6 @@ public:
     void SetRotation(QQuaternion rotation);
 
     /**
-     * @brief Getter for the scaling QVector3D.
-     * @return The current scaling as a QVector3D.
-     */
-    QVector3D GetScale();
-
-    /**
-     * @brief Setter for the scaling QVector3D.
-     * @param scale A QVector3D representing a scaling.
-     */
-    void SetScale(QVector3D scale);
-
-    /**
      * @brief Getter for the translation QVector3D.
      * @return The current translation as a QVector3D.
      */
@@ -62,7 +56,7 @@ public:
     /**
      * @brief Constructor
      */
-    Transform3D();
+    Camera3D();
 
     /**
      * @brief A function for determining the current forward direction.
@@ -81,6 +75,11 @@ public:
     void ResetTranslation();
 
     /**
+     * @brief Sets the camera position and orientation to the default.
+     */
+    void ResetView();
+
+    /**
      * @brief A function for determining the current right direction.
      * @return A QVector3D representing the transformed right direction.
      */
@@ -93,14 +92,7 @@ public:
     void Rotate(QQuaternion rotation);
 
     /**
-     * @brief Applies a scaling to the existing scaling vector.
-     * @param scale A QVector3D representing a scaling.
-     */
-    void Scale(QVector3D scale);
-
-    /**
-     * @brief Converts the translation, scaling and rotation vectors into
-     * a QMatrix4x4.
+     * @brief Converts the translation and rotation vectors into a QMatrix4x4.
      * @return A QMatrix4x4 representing the total 3D transformation.
      */
     QMatrix4x4 ToMatrix();
@@ -140,14 +132,14 @@ public:
     bool m_Changed;
 
     /**
+     * @brief Matrix describing the default camera view.
+     */
+    QMatrix4x4 m_DefaultView;
+
+    /**
      * @brief The current rotation to be applied.
      */
     QQuaternion m_Rotation;
-
-    /**
-     * @brief The current scaling to be applied.
-     */
-    QVector3D m_Scale{1,1,1};
 
     /**
      * @brief The current translation to be applied.
@@ -160,4 +152,4 @@ public:
     QMatrix4x4 m_World;
 };
 
-#endif // TRANSFORM3D_H
+#endif // CAMERA3D_H

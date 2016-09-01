@@ -143,7 +143,7 @@
            <number>50</number>
           </property>
           <property name="maximum">
-           <number>5000</number>
+           <number>10000</number>
           </property>
           <property name="pageStep">
            <number>100</number>
@@ -168,10 +168,17 @@
            <number>50</number>
           </property>
           <property name="maximum">
-           <number>5000</number>
+           <number>10000</number>
           </property>
           <property name="value">
            <number>100</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="m_ResetCamera">
+          <property name="text">
+           <string>Reset Camera</string>
           </property>
          </widget>
         </item>
@@ -187,16 +194,6 @@
            </size>
           </property>
          </spacer>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="m_UseBuffers">
-          <property name="text">
-           <string>Draw Using Buffers</string>
-          </property>
-          <property name="checked">
-           <bool>false</bool>
-          </property>
-         </widget>
         </item>
         <item>
          <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -299,7 +296,7 @@
           <item>
            <widget class="QLineEdit" name="groLineEdit">
             <property name="text">
-             <string>C:/Users/Donal/Desktop/MDVis/Data/large_set.gro</string>
+             <string>C:/Users/Donal/Desktop/MDVis/Data/small_set.gro</string>
             </property>
            </widget>
           </item>
@@ -317,7 +314,7 @@
           <item>
            <widget class="QLineEdit" name="xtcLineEdit">
             <property name="text">
-             <string>C:/Users/Donal/Desktop/MDVis/Data/large_set.xtc</string>
+             <string>C:/Users/Donal/Desktop/MDVis/Data/small_set.xtc</string>
             </property>
            </widget>
           </item>

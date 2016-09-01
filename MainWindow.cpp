@@ -56,8 +56,8 @@ MainWindow::MainWindow(QWidget* parent) :
                      this, SLOT(calculateFPS()));
     QObject::connect(ui->zoomLevel, SIGNAL(valueChanged(int)),
                      ui->m_OpenGLWidget, SLOT(SetZoom(int)));
-    QObject::connect(ui->m_UseBuffers, SIGNAL(toggled(bool)),
-                     ui->m_OpenGLWidget, SLOT(SetUseBuffers(bool)));
+    QObject::connect(ui->m_ResetCamera, SIGNAL(released()),
+                     ui->m_OpenGLWidget, SLOT(ResetView()));
 }
 
 MainWindow::~MainWindow()
@@ -147,6 +147,8 @@ void MainWindow::mapColour()
     printString("Colour mapping complete!",0);
 
     ui->m_OpenGLWidget->SetVertices(vertexVect);
+    QVector3D box = m_FileReader->GetSimBoxRef();
+    ui->m_OpenGLWidget->SetBoundingBox(box);
 
     ui->m_LegendMax->setText(QString::number(m_MaxZ).left(5));
     ui->m_LegendMin->setText(QString::number(m_MinZ).left(5));

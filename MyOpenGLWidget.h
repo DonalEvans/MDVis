@@ -12,6 +12,7 @@
 
 #include "Vertex.h"
 #include "Transform3D.h"
+#include "Camera3D.h"
 #include <QOpenGLWidget>
 #include <QOpenGLBuffer>
 #include <QOpenGLFunctions>
@@ -54,7 +55,20 @@ public:
      */
     void CreateTrajBuffer();
 
+    /**
+     * @brief Sets the size of the bounding box for the data, allowing
+     * initial camera position to be set.
+     * @param box a QVector3D represening the boundaries of the simulation
+     * space.
+     */
+    void SetBoundingBox(QVector3D box);
+
 public slots:
+    /**
+     * @brief Resets the camera view to the default view.
+     */
+    void ResetView();
+
     /**
      * @brief Setter for the radius of the circles to be drawn.
      * @param radius The radius to be used.
@@ -84,12 +98,6 @@ public slots:
      * @param frame The frame number that will be drawn.
      */
     void SetFrame(int frame);
-
-    /**
-     * @brief Setter for whether or not OpenGL buffers will be used to draw.
-     * @param useBuffers True if OpenGL buffers are to be used to draw.
-     */
-    void SetUseBuffers(bool useBuffers);
 
     /**
      * @brief Setter for the zoom level.
@@ -196,18 +204,7 @@ private:
      */
     virtual void mouseReleaseEvent(QMouseEvent *event);
 
-    /**
-     * @brief Rotates a point about an axis fixed in space.
-     * @param point The point to be rotated in 3D coordinates.
-     * @param origin The origin of the space in which the point lies.
-     * @param direction The vector about which the point will be rotated.
-     * @param angle The angle by which the point will be rotated.
-     * @return A QVector3D representing the new coordinates of the point.
-     */
-    QVector3D rotatePoint(QVector3D point,
-                          QVector3D origin,
-                          QVector3D direction,
-                          float angle);
+    void printMatrix();
     
     /**
      * @brief The number of atoms currently being drawn.
@@ -215,9 +212,15 @@ private:
     int m_Atoms;
 
     /**
-     * @brief The vector representing the center position in gluLookat().
+     * @brief The camera object.
      */
-    QVector3D m_Center = {58,58,5};
+    Camera3D m_Camera;
+
+    /**
+     * @brief The uniform location within the shader files of the camera to
+     * view transformation matrix.
+     */
+    int m_CameraToView;
 
     /**
      * @brief The buffer in which vertices required to draw circles are stored.
@@ -228,6 +231,11 @@ private:
      * @brief The radius of circles to be drawn.
      */
     float m_CircleRadius = 1.0;
+
+    /**
+     * @brief Matrix describing the default camera view.
+     */
+    QMatrix4x4 m_DefaultView;
     
     /**
      * @brief Flag determining if circles are to be drawn.
@@ -245,14 +253,9 @@ private:
     bool m_DrawPoints = false;
 
     /**
-     * @brief The vector representing the eye position in gluLookat().
-     */
-    QVector3D m_Eye = {58,58,-120};
-
-    /**
      * @brief The far clipping plane.
      */
-    float m_Far = 2;
+    float m_Far = 200;
 
     /**
      * @brief The frame of data for which positions are being drawn.
@@ -322,11 +325,6 @@ private:
     QOpenGLBuffer m_TrajBuffer;
 
     /**
-     * @brief The vector indicating the up direction in gluLookat().
-     */
-    QVector3D m_Up = {0,1,0};
-
-    /**
      * @brief Determines how objects will be drawn; either using OpenGL buffers
      * or reading in vertex data every time PaintGL is called.
      */
@@ -339,9 +337,9 @@ private:
 
     /**
      * @brief The uniform location within the shader files of the world to
-     * view transformation matrix.
+     * camera transformation matrix.
      */
-    int m_WorldToView;
+    int m_WorldToCamera;
 
     /**
      * @brief The zoom to be applied to the image, as a fraction.

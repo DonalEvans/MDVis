@@ -23,7 +23,8 @@ SOURCES += main.cpp\
     MyOpenGLWidget.cpp \
     Vertex.cpp \
     ColourLegend.cpp \
-    Transform3D.cpp
+    Transform3D.cpp \
+    Camera3D.cpp
 
 HEADERS  += MainWindow.h \
     Atom.h \
@@ -34,7 +35,8 @@ HEADERS  += MainWindow.h \
     MyOpenGLWidget.h \
     Vertex.h \
     ColourLegend.h \
-    Transform3D.h
+    Transform3D.h \
+    Camera3D.h
 
 FORMS    += mainwindow.ui
 
