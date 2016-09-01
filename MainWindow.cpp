@@ -30,10 +30,6 @@ MainWindow::MainWindow(QWidget* parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    QObject::connect(ui->zoomSlider, SIGNAL(valueChanged(int)),
-                     ui->zoomLevel, SLOT(setValue(int)));
-    QObject::connect(ui->zoomLevel, SIGNAL(valueChanged(int)),
-                     ui->zoomSlider, SLOT(setValue(int)));
     QObject::connect(m_FileReader, SIGNAL(consoleOutput(QString,int)),
                      ui->statusBar, SLOT(showMessage(QString,int)));
     QObject::connect(m_FileReader, SIGNAL(consoleOutput(QString,int)),
@@ -54,8 +50,6 @@ MainWindow::MainWindow(QWidget* parent) :
                      ui->m_OpenGLWidget, SLOT(SetFrame(int)));
     QObject::connect(m_FPSTimer, SIGNAL(timeout()),
                      this, SLOT(calculateFPS()));
-    QObject::connect(ui->zoomLevel, SIGNAL(valueChanged(int)),
-                     ui->m_OpenGLWidget, SLOT(SetZoom(int)));
     QObject::connect(ui->m_ResetCamera, SIGNAL(released()),
                      ui->m_OpenGLWidget, SLOT(ResetView()));
 }
@@ -199,8 +193,8 @@ void MainWindow::on_xtcSelectButton_clicked()
 {
     QString xtcFilePath = QFileDialog::getOpenFileName(this,
                                                        tr("Select .xtc file"),
-                                                    QDir::homePath(),
-                                                    tr(".xtc files (*.xtc)"));
+                                                       QDir::homePath(),
+                                                       tr(".xtc files (*.xtc)"));
     ui->xtcLineEdit->setText(xtcFilePath);
 
 }

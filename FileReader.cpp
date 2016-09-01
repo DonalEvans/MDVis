@@ -231,11 +231,36 @@ bool FileReader::fetchXtcData(const QString& xtcFilePath)
                 float yPos = xtcPosition[atomIndex][Y_POSITION];
                 float zPos = xtcPosition[atomIndex][Z_POSITION];
 
+                if ((actualStep > 0)&&
+                   ((boxMatrix[X_POSITION][X_POSITION]/xPos > 0.9)||
+                   (boxMatrix[X_POSITION][X_POSITION]/xPos < 0.1)))
+                {
+                    float prevX = GetAtomVectorRef()[i]->GetTrajectoryRef()[actualStep -1].x();
+                    if (abs(prevX - xPos) > boxMatrix[X_POSITION][X_POSITION] / 2)
+                    {
+                        xPos += (boxMatrix[X_POSITION][X_POSITION]*
+                                 (((prevX - xPos) > 0) - ((prevX - xPos) < 0)));
+                    }
+                }
+
+                if ((actualStep > 0)&&
+                   ((boxMatrix[Y_POSITION][Y_POSITION]/yPos > 0.9)||
+                   (boxMatrix[Y_POSITION][Y_POSITION]/yPos < 0.1)))
+                {
+                    float prevY = GetAtomVectorRef()[i]->GetTrajectoryRef()[actualStep -1].y();
+                    if (abs(prevY - yPos) > boxMatrix[Y_POSITION][Y_POSITION] / 2)
+                    {
+                        yPos += (boxMatrix[Y_POSITION][Y_POSITION]*
+                                 (((prevY - yPos) > 0) - ((prevY - yPos) < 0)));
+                    }
+                }
+
                 GetAtomVectorRef()[i]->AddTimeStep(xPos, yPos, zPos, stepTime);
                 ++atomIndex;
             }
             emit consoleOutput("Frame " + QString::number(actualStep++) +
                                " read!",0);
+
         }
         else
         {

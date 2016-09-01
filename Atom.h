@@ -152,6 +152,8 @@ public:
      */
     static const int GRO_FIELD_SIZE = 5;
 
+    void PrintAtomFrame(int frame);
+
 private:
     /**
      * @brief Setter for the ID of the Residue to which this Atom belongs.

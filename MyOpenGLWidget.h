@@ -38,6 +38,12 @@ public:
     void SetVertices(QVector<QVector<Vertex>> vertices);
 
     /**
+     * @brief Setter for the zoom level.
+     * @param zoom The zoom factor as a float.
+     */
+    void SetZoom(float zoom);
+
+    /**
      * @brief Constructor
      * @param parent The parent widget to which this object belongs.
      */
@@ -98,13 +104,6 @@ public slots:
      * @param frame The frame number that will be drawn.
      */
     void SetFrame(int frame);
-
-    /**
-     * @brief Setter for the zoom level.
-     * @param zoom The percentage zoom level as an integer.
-     */
-    void SetZoom(int zoom);
-
 
 protected:
     /**
@@ -204,8 +203,12 @@ private:
      */
     virtual void mouseReleaseEvent(QMouseEvent *event);
 
-    void printMatrix();
-    
+    /**
+     * @brief Handles behaviour on mouse wheel scroll.
+     * @param event
+     */
+    virtual void wheelEvent(QWheelEvent *event);
+
     /**
      * @brief The number of atoms currently being drawn.
      */
@@ -357,14 +360,29 @@ private:
     const float FOV = 0.88;
     
     /**
+     * @brief Scaling factor influencing the speed at which rotation occurs.
+     */
+    const float ROT_SPEED = 0.5;
+
+    /**
      * @brief The square root of 3, used in calculating circle vertices.
      */
     const float SQRT_THREE = 1.732;
+
+    /**
+     * @brief Scaling factor influencing the speed at which translation occurs.
+     */
+    const float TRANS_SPEED = 0.4;
     
     /**
      * @brief The number of spatial dimensions being used.
      */
     const int TUPLE_SIZE_3D = 3;
+
+    /**
+     * @brief The rate at which zooming occurs.
+     */
+    const float ZOOM_SPEED = 1.5;
 };
 
 #endif // MYOPENGLWIDGET_H

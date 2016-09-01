@@ -63,9 +63,9 @@ void MyOpenGLWidget::setRotate(bool rotating)
     m_IsRotating = rotating;
 }
 
-void MyOpenGLWidget::SetZoom(int zoom)
+void MyOpenGLWidget::SetZoom(float zoom)
 {
-    m_Zoom = 100/(float)zoom;
+    m_Zoom = zoom;
     update();
 }
 
@@ -121,6 +121,7 @@ void MyOpenGLWidget::paintGL()
     m_Projection.perspective(qRadiansToDegrees(FOV)*m_Zoom,
                              (float)this->width()/(float)this->height(),
                              m_Near, m_Far);
+//    m_Projection.ortho(-116,0,-116,0,0,1000);
 
     if(m_DrawPaths)
     {
@@ -252,6 +253,7 @@ void MyOpenGLWidget::drawPoints()
     m_TrajBuffer.bind();
 
     int frameOffset = m_Frame*Vertex::Stride();
+
     m_Program->enableAttributeArray(0);
     m_Program->enableAttributeArray(1);
     m_Program->setAttributeBuffer(0, GL_FLOAT,
@@ -383,18 +385,22 @@ void MyOpenGLWidget::mouseReleaseEvent(QMouseEvent *event)
     update();
 }
 
-void MyOpenGLWidget::printMatrix()
+void MyOpenGLWidget::wheelEvent(QWheelEvent *event)
 {
-    QTextStream out(stdout);
-    out << m_Transform.ToMatrix().row(0)[0] << " "<< m_Transform.ToMatrix().row(0)[1] << " "<< m_Transform.ToMatrix().row(0)[2] << " "<< m_Transform.ToMatrix().row(0)[3] << endl;
-    out << m_Transform.ToMatrix().row(1)[0] << " "<< m_Transform.ToMatrix().row(1)[1] << " "<< m_Transform.ToMatrix().row(1)[2] << " "<< m_Transform.ToMatrix().row(1)[3] << endl;
-    out << m_Transform.ToMatrix().row(2)[0] << " "<< m_Transform.ToMatrix().row(2)[1] << " "<< m_Transform.ToMatrix().row(2)[2] << " "<< m_Transform.ToMatrix().row(2)[3] << endl;
-    out << m_Transform.ToMatrix().row(3)[0] << " "<< m_Transform.ToMatrix().row(3)[1] << " "<< m_Transform.ToMatrix().row(3)[2] << " "<< m_Transform.ToMatrix().row(3)[3] << endl;
+    if (event->delta() < 0 && m_Zoom < ZOOM_SPEED)
+    {
+        SetZoom(m_Zoom*ZOOM_SPEED);
+    }
+    else if (event->delta() > 0)
+    {
+        SetZoom(m_Zoom/ZOOM_SPEED);
+    }
 }
 
 void MyOpenGLWidget::ResetView()
 {
     m_Camera.ResetView();
+    m_Zoom = 1.0;
     update();
 }
 

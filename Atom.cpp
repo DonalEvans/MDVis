@@ -220,3 +220,42 @@ void Atom::PrintAtom()
     }
     delete out;
 }
+
+void Atom::PrintAtomFrame(int frame)
+{
+    QTextStream* out = new QTextStream(stdout, QIODevice::WriteOnly);
+    *out << GetParentResidueID() << " " << GetParentResidue();
+    *out << " " << GetAtomName() << " Frame = " << frame << endl;
+    QVector<QVector3D> traj = GetTrajectoryRef();
+    QVector<QVector3D> vel = GetVelocityRef();
+    QVector<float> pathLength = GetPathLengthRef();
+    QVector<float> pathCurvature = GetPathCurvatureRef();
+    QVector<int> stepTime = GetStepTimeRef();
+
+    for (int j = 0; j < Atom::DIMENSIONS; ++j)
+    {
+        *out << traj[frame][j] << '\t';
+    }
+    if (!vel.isEmpty())
+    {
+        for (int j = 0; j < Atom::DIMENSIONS; ++j)
+        {
+            *out << vel[frame][j] << '\t';
+        }
+    }
+    if (!pathLength.isEmpty())
+    {
+        *out << pathLength[frame] << '\t';
+    }
+    if (!pathCurvature.isEmpty())
+    {
+        *out << pathCurvature[frame] << '\t';
+    }
+    if (!stepTime.isEmpty())
+    {
+        *out << stepTime[frame];
+    }
+    *out << endl;
+
+    delete out;
+}
