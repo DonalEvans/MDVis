@@ -1,6 +1,5 @@
 #include "MainWindow.h"
 #include "ui_mainwindow.h"
-#include "Vertex.h"
 #include <QFileDialog>
 #include <QFile>
 #include <QTextStream>
@@ -30,8 +29,6 @@ MainWindow::MainWindow(QWidget* parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    QObject::connect(m_FileReader, SIGNAL(consoleOutput(QString,int)),
-                     ui->statusBar, SLOT(showMessage(QString,int)));
     QObject::connect(m_FileReader, SIGNAL(consoleOutput(QString,int)),
                      this, SLOT(printString(QString,int)));
     QObject::connect(m_Timer, SIGNAL(timeout()),
@@ -83,66 +80,60 @@ void MainWindow::drawNextFrame()
 
 void MainWindow::filter()
 {
-    printString("Filtering atoms...",0);
-    QVector<QVector3D> traj;
+    printString("Filtering atoms...",1000);
 
     bool condition = true;
 
-    m_FilteredPos.clear();
-
     for (int i = 0; i < m_AtomVector.length(); ++i)
     {
-        Atom* currAtom = m_AtomVector[i];
+//        Atom* currAtom = m_AtomVector[i];
+        QVector<Vertex> vertices;
         if (condition)
         {
-            QVector<QVector3D> posData = currAtom->GetTrajectoryRef();
-            for (int j = 0; j < posData.length(); ++j)
+            for (int j = 0; j < m_AtomVector[i]->GetTrajectoryRef().length(); ++j)
             {
-                if (posData[j].z() < m_MinZ)
+                if (m_AtomVector[i]->GetTrajectoryRef()[j].z() < m_MinZ)
                 {
-                    m_MinZ = posData[j].z();
+                    m_MinZ = m_AtomVector[i]->GetTrajectoryRef()[j].z();
                 }
-                else if (posData[j].z() > m_MaxZ)
+                else if (m_AtomVector[i]->GetTrajectoryRef()[j].z() > m_MaxZ)
                 {
-                    m_MaxZ = posData[j].z();
+                    m_MaxZ = m_AtomVector[i]->GetTrajectoryRef()[j].z();
                 }
-                traj.append(posData[j]);
+                Vertex vertex;
+                vertex.SetPosition(m_AtomVector[i]->GetTrajectoryRef()[j]);
+                vertices.append(vertex);
             }
-            m_FilteredPos.append(traj);
-            traj.clear();
+            ui->m_OpenGLWidget->AddVertices(vertices);
         }
     }
-    printString("Filtering complete!",0);
+//    printString("Filtering complete!",1000);
 }
 
 void MainWindow::mapColour()
 {
-    printString("Mapping colour to atoms...", 0);
+    printString("Mapping colour to atoms...", 1000);
     float range = m_MaxZ - m_MinZ;
     float zPos;
     int index;
-    QVector<QVector<Vertex>> vertexVect;
-    QVector<Vertex> trajVertex;
-    for (int i = 0; i < m_FilteredPos.length(); ++i)
+    for (int i = 0; i < ui->m_OpenGLWidget->GetVerticesRef().length(); ++i)
     {
-        for (int j = 0; j < m_FilteredPos[i].length(); ++j)
+        for (int j = 0; j < ui->m_OpenGLWidget->GetVerticesRef()[i].length(); ++j)
         {
-            zPos = m_FilteredPos[i][j].z() - m_MinZ;
+            zPos = ui->m_OpenGLWidget->GetVerticesRef()[i][j].GetPosition().z() - m_MinZ;
             index = COLOUR_VECT.length()*zPos/range;
-            if (index >= 7)
+            if (index >= COLOUR_VECT.length())
             {
-                index = 6;
+                index = COLOUR_VECT.length() - 1;
             }
-            trajVertex.append(Vertex(m_FilteredPos[i][j],COLOUR_VECT[index]));
+            ui->m_OpenGLWidget->GetVerticesRef()[i][j].SetColour(COLOUR_VECT[index]);
         }
-        vertexVect.append(trajVertex);
-        trajVertex.clear();
     }
-    printString("Colour mapping complete!",0);
+    printString("Colour mapping complete!",1000);
 
-    ui->m_OpenGLWidget->SetVertices(vertexVect);
-    QVector3D box = m_FileReader->GetSimBoxRef();
-    ui->m_OpenGLWidget->SetBoundingBox(box);
+    ui->m_OpenGLWidget->CreateTrajBuffer();
+
+    ui->m_OpenGLWidget->SetBoundingBox(m_FileReader->GetSimBoxRef());
 
     ui->m_LegendMax->setText(QString::number(m_MaxZ).left(5));
     ui->m_LegendMin->setText(QString::number(m_MinZ).left(5));
@@ -167,14 +158,18 @@ void MainWindow::on_groSelectButton_clicked()
 
 void MainWindow::on_loadDataButton_clicked()
 {
+    printString("Starting!", 1000);
+
     ui->m_FrameBox->setValue(0);
     QString groFilePath = ui->groLineEdit->text();
     QString xtcFilePath = ui->xtcLineEdit->text();
-    ui->statusBar->showMessage("Starting!", 2000);
+    ui->m_OpenGLWidget->ClearData();
+    m_AtomVector.clear();
+    m_AtomVector.squeeze();
     if(m_FileReader->LoadData(groFilePath, xtcFilePath))
     {
         setAtomVector(m_FileReader->GetAtomVectorRef());
-        ui->statusBar->showMessage("Files Loaded", 2000);
+//        printString("Files Loaded", 1000);
         int totalFrames = m_AtomVector[0]->GetTrajectoryRef().length();
         ui->m_FrameBox->setMaximum(totalFrames - 1);
         filter();
@@ -203,6 +198,7 @@ void MainWindow::printString(QString string, int duration)
 {
     QTextStream* out = new QTextStream(stdout, QIODevice::WriteOnly);
     *out << string << endl;
+    ui->statusBar->showMessage(string, duration);
     delete out;
 }
 

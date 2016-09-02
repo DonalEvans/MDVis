@@ -18,12 +18,6 @@ class Transform3D
 {
 public:
     /**
-     * @brief Setter for the transformation matrix.
-     * @param matrix The new value for the transformation matrix.
-     */
-    void SetMatrix(QMatrix4x4 matrix);
-
-    /**
      * @brief Getter for the rotation QQuaternion.
      * @return The current rotation as a QQuaternion.
      */

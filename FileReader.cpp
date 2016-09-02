@@ -5,14 +5,14 @@
 #include <QTextStream>
 #include <QElapsedTimer>
 
-QVector<Atom *> &FileReader::GetAtomVectorRef()
+QVector<Atom*> &FileReader::GetAtomVectorRef()
 {
-    return m_atomVector;
+    return m_AtomVector;
 }
 
-void FileReader::setAtomVector(QVector<Atom *> atomVector)
+void FileReader::setAtomVector(QVector<Atom*> atomVector)
 {
-    m_atomVector = atomVector;
+    m_AtomVector = atomVector;
 }
 
 QStringList FileReader::getGroList()
@@ -20,7 +20,7 @@ QStringList FileReader::getGroList()
     return m_GroList;
 }
 
-void FileReader::setGroList(QStringList &groList)
+void FileReader::setGroList(QStringList& groList)
 {
     m_GroList = groList;
 }
@@ -76,6 +76,7 @@ void FileReader::clearAtomVector()
         delete atomIterator.next();
     }
     GetAtomVectorRef().clear();
+    GetAtomVectorRef().squeeze();
 }
 
 void FileReader::clearResidueVector()
@@ -86,6 +87,7 @@ void FileReader::clearResidueVector()
         delete GetResidueVectorRef()[i];
     }
     GetResidueVectorRef().clear();
+    GetResidueVectorRef().squeeze();
 }
 
 void FileReader::createAtomVector()
@@ -104,8 +106,6 @@ void FileReader::createAtomVector()
         }
         GetAtomVectorRef().append(newAtomPtr);
     }
-    emit consoleOutput("Atom vector created with length "
-          + QString::number(GetAtomVectorRef().length()) + "!",0);
 }
 
 void FileReader::createGroList(QString groFileData)
@@ -123,7 +123,6 @@ void FileReader::createGroList(QString groFileData)
 
 void FileReader::createResidueVector()
 {
-    emit consoleOutput("Creating Residue vector...",0);
     GetResidueVectorRef().resize(getNumOfResidues());
     GetResidueVectorRef().fill(0);
     QVectorIterator<Atom*> atomIterator(GetAtomVectorRef());
@@ -144,8 +143,6 @@ void FileReader::createResidueVector()
         GetResidueVectorRef()[residueID - 1]->AddAtom(atomPtr);
 
     }
-    emit consoleOutput("Residue vector created with length "
-          + QString::number(GetResidueVectorRef().length()) + "!",0);
 }
 
 bool FileReader::fetchGroData(const QString& groFilePath)
@@ -258,9 +255,7 @@ bool FileReader::fetchXtcData(const QString& xtcFilePath)
                 GetAtomVectorRef()[i]->AddTimeStep(xPos, yPos, zPos, stepTime);
                 ++atomIndex;
             }
-            emit consoleOutput("Frame " + QString::number(actualStep++) +
-                               " read!",0);
-
+            ++actualStep;
         }
         else
         {
@@ -296,14 +291,14 @@ bool FileReader::LoadData(const QString& groFilePath,
 
     createResidueVector();
 
-//    emit consoleOutput("Calculating atom data",0);
+//    emit consoleOutput("Calculating atom data",1000);
 //    for (int i = 0; i < GetAtomVectorRef().length(); ++i)
 //    {
 //        GetAtomVectorRef()[i]->CalculateVelocity();
 //        GetAtomVectorRef()[i]->CalculatePathLength();
 //        GetAtomVectorRef()[i]->CalculatePathCurvature();
 //    }
-//    emit consoleOutput("Atom data calculated",0);
+//    emit consoleOutput("Atom data calculated",1000);
 
     return true;
 }

@@ -8,7 +8,11 @@ class Vertex
 public:
     QVector3D GetColour();
 
+    void SetColour(QVector3D colour);
+
     QVector3D GetPosition();
+
+    void SetPosition(QVector3D position);
 
     Vertex();
 
@@ -19,6 +23,8 @@ public:
     static int ColourOffset();
 
     static int PositionOffset();
+
+    void PrintVertex();
 
     static int Stride();
 

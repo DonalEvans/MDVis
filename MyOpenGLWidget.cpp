@@ -9,7 +9,7 @@ void MyOpenGLWidget::SetCircleRadius(int radius)
     m_CircleRadius = radius;
     if (m_DrawCircles)
     {
-//        CreateCirclesBuffer();
+        CreateCirclesBuffer();
     }
     update();
 }
@@ -17,7 +17,7 @@ void MyOpenGLWidget::SetCircleRadius(int radius)
 void MyOpenGLWidget::SetDrawCircles(bool draw)
 {
     m_DrawCircles = draw;
-//    CreateCirclesBuffer();
+    CreateCirclesBuffer();
     update();
 }
 
@@ -33,12 +33,22 @@ void MyOpenGLWidget::SetDrawPoints(bool draw)
     update();
 }
 
+float MyOpenGLWidget::getFar()
+{
+    return m_Far;
+}
+
+void MyOpenGLWidget::setFar(float newFar)
+{
+    m_Far = newFar;
+}
+
 void MyOpenGLWidget::SetFrame(int frame)
 {
     m_Frame = frame;
     if (m_DrawCircles)
     {
-//        CreateCirclesBuffer();
+        CreateCirclesBuffer();
     }
     update();
 }
@@ -63,24 +73,22 @@ void MyOpenGLWidget::setRotate(bool rotating)
     m_IsRotating = rotating;
 }
 
-void MyOpenGLWidget::SetZoom(float zoom)
+QVector<QVector<Vertex>>& MyOpenGLWidget::GetVerticesRef()
 {
-    m_Zoom = zoom;
-    update();
-}
-
-void MyOpenGLWidget::SetTrajectory(QVector<QVector<QVector3D>> traj)
-{
-    m_Traj = traj;
-    CreateTrajBuffer();
-//    CreateCirclesBuffer();
+    return m_Vertices;
 }
 
 void MyOpenGLWidget::SetVertices(QVector<QVector<Vertex>> vertices)
 {
     m_Vertices = vertices;
     CreateTrajBuffer();
-//    CreateCirclesBuffer();
+    CreateCirclesBuffer();
+}
+
+void MyOpenGLWidget::SetZoom(float zoom)
+{
+    m_Zoom = zoom;
+    update();
 }
 
 MyOpenGLWidget::MyOpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
@@ -91,6 +99,8 @@ MyOpenGLWidget::MyOpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
 void MyOpenGLWidget::initializeGL()
 {
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
 
     m_Program = new QOpenGLShaderProgram();
     m_Program->bind();
@@ -115,7 +125,7 @@ void MyOpenGLWidget::resizeGL(int w, int h)
 
 void MyOpenGLWidget::paintGL()
 {
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     m_Projection.setToIdentity();
     m_Projection.perspective(qRadiansToDegrees(FOV)*m_Zoom,
@@ -131,13 +141,28 @@ void MyOpenGLWidget::paintGL()
     {
         if(m_DrawCircles)
         {
-//            drawCircles();
+            drawCircles();
         }
         else
         {
             drawPoints();
         }
     }
+}
+
+void MyOpenGLWidget::AddVertices(QVector<Vertex> vertices)
+{
+    m_Vertices.append(vertices);
+}
+
+void MyOpenGLWidget::ClearData()
+{
+    m_Vertices.clear();
+    m_Vertices.squeeze();
+    m_TrajBuffer.destroy();
+    m_TrajBuffer.create();
+    m_CircleBuffer.destroy();
+    m_CircleBuffer.create();
 }
 
 void MyOpenGLWidget::CreateCirclesBuffer()
@@ -155,10 +180,8 @@ void MyOpenGLWidget::CreateCirclesBuffer()
     m_CircleBuffer.allocate(circleSize*m_Atoms);
     for (int i = 0; i < m_Atoms; ++i)
     {
-        QVector<Vertex> circleVertices = getCircleVertices(centers[i]);
-
         m_CircleBuffer.write(i*circleSize,
-                             circleVertices.constData(),
+                             getCircleVertices(centers[i]).constData(),
                              circleSize);
     }
     m_CircleBuffer.release();
@@ -277,27 +300,6 @@ void MyOpenGLWidget::drawPoints()
     m_Program->release();
 }
 
-QVector<QVector3D> MyOpenGLWidget::getCircleVertices(QVector3D center)
-{
-    QVector<QVector3D> vertices;
-    vertices.append(center);
-    float x = center.x();
-    float y = center.y();
-    float z = center.z();
-    float scaling = 1.0/464.0;
-    float halfR = m_CircleRadius*scaling/2.0;
-
-    vertices.append(QVector3D(x, y + 2*halfR, z));
-    vertices.append(QVector3D(x + halfR*SQRT_THREE, y + halfR, z));
-    vertices.append(QVector3D(x + halfR*SQRT_THREE, y - halfR, z));
-    vertices.append(QVector3D(x, y - 2*halfR, z));
-    vertices.append(QVector3D(x - halfR*SQRT_THREE, y - halfR, z));
-    vertices.append(QVector3D(x - halfR*SQRT_THREE, y + halfR, z));
-    vertices.append(QVector3D(x, y + 2*halfR, z));
-
-    return vertices;
-}
-
 QVector<Vertex> MyOpenGLWidget::getCircleVertices(Vertex center)
 {
     QVector<Vertex> vertices;
@@ -305,7 +307,7 @@ QVector<Vertex> MyOpenGLWidget::getCircleVertices(Vertex center)
     float x = center.GetPosition().x();
     float y = center.GetPosition().y();
     float z = center.GetPosition().z();
-    float scaling = 1.0/464.0;
+    float scaling = 1.0/50.0;
     float halfR = m_CircleRadius*scaling/2.0;
 
     QVector3D colour = center.GetColour();
@@ -330,13 +332,11 @@ QVector<Vertex> MyOpenGLWidget::getCircleVertices(Vertex center)
 
 void MyOpenGLWidget::mouseMoveEvent(QMouseEvent *event)
 {
-    float width = this->width();
-    float height = this->height();
-    float dx = (event->x() - m_LastX);
-    float dy = (event->y() - m_LastY);
+    float dx = event->x() - m_LastX;
+    float dy = event->y() - m_LastY;
 
-    float transSpeed = 0.4*m_Zoom;
-    float rotSpeed = 0.5;
+    float transSpeed = TRANS_SPEED*m_Zoom;
+    float rotSpeed = ROT_SPEED;
 
     if (m_IsPanning)
     {
@@ -348,10 +348,11 @@ void MyOpenGLWidget::mouseMoveEvent(QMouseEvent *event)
     }
     else if (m_IsRotating)
     {
-        QQuaternion upRot = QQuaternion::fromAxisAndAngle(Transform3D::UP,
+        QQuaternion upRot = QQuaternion::fromAxisAndAngle(m_Camera.Up(),
                                                           -rotSpeed*dx);
         QQuaternion rightRot = QQuaternion::fromAxisAndAngle(m_Camera.Right(),
                                                              -rotSpeed*dy);
+
         m_Camera.Rotate(upRot);
         m_Camera.Rotate(rightRot);
     }
@@ -400,15 +401,20 @@ void MyOpenGLWidget::wheelEvent(QWheelEvent *event)
 void MyOpenGLWidget::ResetView()
 {
     m_Camera.ResetView();
-    m_Zoom = 1.0;
-    update();
+    SetZoom(1.0);
 }
 
 void MyOpenGLWidget::SetBoundingBox(QVector3D box)
 {
+    m_Transform.ResetRotation();
+    m_Transform.ResetTranslation();
+    m_Transform.Translate(-box/2);
+
+    setFar(box.x()*3);
+
     QMatrix4x4 defaultView;
-    QVector3D eye(box.x()/2,box.y()/2,m_Far);
-    QVector3D center = box/2;
+    QVector3D eye(0,0,m_Far/2);
+    QVector3D center(0,0,0);
     QVector3D up(0,1,0);
     defaultView.lookAt(eye,center,up);
     m_Camera.SetDefaultView(defaultView);

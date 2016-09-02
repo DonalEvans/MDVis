@@ -1,13 +1,5 @@
 #include "Transform3D.h"
 
-void Transform3D::SetMatrix(QMatrix4x4 matrix)
-{
-    ResetRotation();
-    ResetTranslation();
-    m_World = matrix;
-    m_Changed = false;
-}
-
 QQuaternion Transform3D::GetRotation()
 {
     return m_Rotation;

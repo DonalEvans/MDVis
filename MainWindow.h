@@ -7,6 +7,7 @@
 #include <QElapsedTimer>
 #include "Residue.h"
 #include "FileReader.h"
+#include "Vertex.h"
 
 namespace Ui {
 class MainWindow;
@@ -65,7 +66,6 @@ private:
     Ui::MainWindow *ui;
     QVector<Atom*> m_AtomVector;
     FileReader* m_FileReader = new FileReader;
-    QVector<QVector<QVector3D>> m_FilteredPos;
     int m_FPS = 0;
     QTimer* m_FPSTimer = new QTimer(this);
     int m_Frame = 0;
@@ -75,7 +75,7 @@ private:
     QVector<Residue*> m_ResidueVector;
     QTimer* m_Timer = new QTimer(this);
 
-    const QVector<QVector3D> COLOUR_VECT = {
+    QVector<QVector3D> COLOUR_VECT = {
         QVector3D(254,237,222)/255,
         QVector3D(253,208,162)/255,
         QVector3D(253,174,107)/255,

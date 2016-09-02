@@ -24,11 +24,10 @@ class MyOpenGLWidget : public QOpenGLWidget
 
 public:
     /**
-     * @brief Setter for the trajectory data that is to be used in drawing.
-     * @param traj A 2-dimensional QVector containing a QVector of 3D
-     * coordinates for each time step, for each atom.
+     * @brief Getter for a reference to the Vertex vector.
+     * @return A reference to the Vertex vector.
      */
-    void SetTrajectory(QVector<QVector<QVector3D>> traj);
+    QVector<QVector<Vertex>>& GetVerticesRef();
 
     /**
      * @brief Setter for the Vertex data that is to be used in drawing.
@@ -48,6 +47,10 @@ public:
      * @param parent The parent widget to which this object belongs.
      */
     MyOpenGLWidget(QWidget* parent);
+
+    void AddVertices(QVector<Vertex> vertices);
+
+    void ClearData();
 
     /**
      * @brief Loads the vertices required to draw circles into the GPU memory
@@ -125,6 +128,10 @@ protected:
     void resizeGL(int w, int h);
 
 private:
+    float getFar();
+
+    void setFar(float newFar);
+
     /**
      * @brief Setter for the mouse x position value on mouse click.
      * @param LastX The x position of the mouse on mouse click.
@@ -166,15 +173,6 @@ private:
      * atom positions as points to the drawing surface.
      */
     void drawPoints();
-
-    /**
-     * @brief Given the center of a circle, generates 8 3D coordinates
-     * representing points required to draw a circle using GL_TRIANGLE_FAN.
-     * @param center The 3D coordinates of the center of the circle.
-     * @return A QVector of 3D coordinates representing the center of the
-     * circle followed by 7 points around the circumference.
-     */
-    QVector<QVector3D> getCircleVertices(QVector3D center);
 
     /**
      * @brief Given the center of a circle, generates 8 @Vertex objects
@@ -294,7 +292,7 @@ private:
     /**
      * @brief The near clipping plane.
      */
-    float m_Near = 0;
+    float m_Near = 1;
 
     /**
      * @brief The shader program used for drawing.
@@ -315,11 +313,6 @@ private:
      * @brief The Transform3D object to be used for handling transformations.
      */
     Transform3D m_Transform;
-
-    /**
-     * @brief The trajectory verctors for each atom.
-     */
-    QVector<QVector<QVector3D>> m_Traj;
 
     /**
      * @brief The buffer in which vertices used for drawing points and paths
@@ -382,7 +375,7 @@ private:
     /**
      * @brief The rate at which zooming occurs.
      */
-    const float ZOOM_SPEED = 1.5;
+    const float ZOOM_SPEED = 1.35;
 };
 
 #endif // MYOPENGLWIDGET_H

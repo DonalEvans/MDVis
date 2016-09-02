@@ -171,7 +171,7 @@ private:
     /**
      * @brief A QVector of pointers to all the Atoms in the .gro file.
      */
-    QVector<Atom*> m_atomVector;
+    QVector<Atom*> m_AtomVector;
 
     /**
      * @brief A list of Strings containing each line of the .gro file.
