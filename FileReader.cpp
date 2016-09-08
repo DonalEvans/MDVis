@@ -3,7 +3,6 @@
 #include "xdrfile_xtc.h"
 #include <QFile>
 #include <QTextStream>
-#include <QElapsedTimer>
 
 QVector<Atom*> &FileReader::GetAtomVectorRef()
 {

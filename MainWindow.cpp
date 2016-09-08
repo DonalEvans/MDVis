@@ -86,7 +86,6 @@ void MainWindow::filter()
 
     for (int i = 0; i < m_AtomVector.length(); ++i)
     {
-//        Atom* currAtom = m_AtomVector[i];
         QVector<Vertex> vertices;
         if (condition)
         {
@@ -139,10 +138,15 @@ void MainWindow::mapColour()
     ui->m_LegendMin->setText(QString::number(m_MinZ).left(5));
     ui->m_LegendMid->setText(QString::number((m_MaxZ - m_MinZ)/2).left(5));
 
-    QVector3D max = COLOUR_VECT[6]*255;
+    QVector3D max = COLOUR_VECT.first()*255;
     QColor maxColour(max.x(),max.y(),max.z());
     ui->m_ColourLegend->SetMax(maxColour);
-    QVector3D min = COLOUR_VECT[0]*255;
+
+    QVector3D mid = COLOUR_VECT[COLOUR_VECT.length()/2]*255;
+    QColor midColour(mid.x(),mid.y(),mid.z());
+    ui->m_ColourLegend->SetMin(midColour);
+
+    QVector3D min = COLOUR_VECT.last()*255;
     QColor minColour(min.x(),min.y(),min.z());
     ui->m_ColourLegend->SetMin(minColour);
 }

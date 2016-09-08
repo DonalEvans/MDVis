@@ -12,6 +12,17 @@ void ColourLegend::SetMax(QColor colour)
     update();
 }
 
+QColor ColourLegend::GetMid()
+{
+    return m_MidColour;
+}
+
+void ColourLegend::SetMid(QColor colour)
+{
+    m_MidColour = colour;
+    update();
+}
+
 QColor ColourLegend::GetMin()
 {
     return m_MinColour;
@@ -32,6 +43,7 @@ void ColourLegend::paintEvent(QPaintEvent *event)
 {
     QLinearGradient gradient(0, 0, this->width(), this->height());
     gradient.setColorAt(0.0, m_MaxColour);
+    gradient.setColorAt(0.5, m_MidColour);
     gradient.setColorAt(1.0, m_MinColour);
     QBrush brush(gradient);
 

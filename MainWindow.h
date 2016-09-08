@@ -76,13 +76,17 @@ private:
     QTimer* m_Timer = new QTimer(this);
 
     QVector<QVector3D> COLOUR_VECT = {
-        QVector3D(254,237,222)/255,
-        QVector3D(253,208,162)/255,
-        QVector3D(253,174,107)/255,
-        QVector3D(253,141,60)/255,
-        QVector3D(241,105,19)/255,
-        QVector3D(217,72,1)/255,
-        QVector3D(140,45,4)/255
+        QVector3D(103,0,31)/255,
+        QVector3D(178,24,43)/255,
+        QVector3D(214,96,77)/255,
+        QVector3D(244,165,130)/255,
+        QVector3D(253,219,199)/255,
+        QVector3D(247,247,247)/255,
+        QVector3D(209,229,240)/255,
+        QVector3D(146,197,222)/255,
+        QVector3D(67,147,195)/255,
+        QVector3D(33,102,172)/255,
+        QVector3D(5,48,97)/255
     };
 };
 

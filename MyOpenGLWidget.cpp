@@ -336,25 +336,51 @@ void MyOpenGLWidget::mouseMoveEvent(QMouseEvent *event)
     float dy = event->y() - m_LastY;
 
     float transSpeed = TRANS_SPEED*m_Zoom;
-    float rotSpeed = ROT_SPEED;
 
     if (m_IsPanning)
     {
         QVector3D trans;
-        trans -= dx*m_Camera.Right();
-        trans += dy*m_Camera.Up();
+        if(event->modifiers() == Qt::ShiftModifier)
+        {
+            trans += dy*m_Camera.Forward();
+        }
+        else
+        {
+            trans += dx*m_Camera.Right();
+            trans += dy*m_Camera.Up();
+        }
         m_Camera.Translate(trans*transSpeed);
-
     }
     else if (m_IsRotating)
     {
-        QQuaternion upRot = QQuaternion::fromAxisAndAngle(m_Camera.Up(),
-                                                          -rotSpeed*dx);
-        QQuaternion rightRot = QQuaternion::fromAxisAndAngle(m_Camera.Right(),
-                                                             -rotSpeed*dy);
+        if(event->modifiers() == Qt::ShiftModifier)
+        {
+            float centerX = this->width()/2;
+            float centerY = this->height()/2;
+            bool isLeft = ((m_LastX - centerX)*(event->y() - centerY)
+                           - (m_LastY - centerY)*(event->x() - centerX)) > 0;
+            int direction = 1;
+            if (!isLeft)
+            {
+                direction = -1;
+            }
+            float ammount = qSqrt(dy*dy+dx*dx)*0.5;
+            QQuaternion axisRot = QQuaternion::fromAxisAndAngle(m_Camera.Forward(),
+                                                                ROT_SPEED*
+                                                                direction*
+                                                                ammount);
+            m_Camera.Rotate(axisRot);
+        }
+        else
+        {
+            QQuaternion upRot = QQuaternion::fromAxisAndAngle(m_Camera.Up(),
+                                                              -ROT_SPEED*dx);
+            QQuaternion rightRot = QQuaternion::fromAxisAndAngle(m_Camera.Right(),
+                                                                 ROT_SPEED*dy);
 
-        m_Camera.Rotate(upRot);
-        m_Camera.Rotate(rightRot);
+            m_Camera.Rotate(upRot);
+            m_Camera.Rotate(rightRot);
+        }
     }
 
     update();
@@ -413,7 +439,7 @@ void MyOpenGLWidget::SetBoundingBox(QVector3D box)
     setFar(box.x()*3);
 
     QMatrix4x4 defaultView;
-    QVector3D eye(0,0,m_Far/2);
+    QVector3D eye(0,0,-m_Far/2);
     QVector3D center(0,0,0);
     QVector3D up(0,1,0);
     defaultView.lookAt(eye,center,up);

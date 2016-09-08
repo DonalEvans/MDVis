@@ -32,6 +32,18 @@ public:
     void SetMax(QColor colour);
 
     /**
+     * @brief Getter for the colour representing the midpoint value.
+     * @return The colour as a QColor.
+     */
+    QColor GetMid();
+
+    /**
+     * @brief Setter for the colour representing the midpoint value.
+     * @param colour The colour as a QColor.
+     */
+    void SetMid(QColor colour);
+
+    /**
      * @brief Getter for the colour representing the minimum value.
      * @return The colour as a QColor.
      */
@@ -61,6 +73,11 @@ private:
      * @brief The colour representing the maximum value.
      */
     QColor m_MaxColour = Qt::white;
+
+    /**
+     * @brief The colour representing the midpoint value.
+     */
+    QColor m_MidColour = Qt::white;
 
     /**
      * @brief The colour representing the minimum value.
