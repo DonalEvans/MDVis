@@ -48,15 +48,16 @@ public:
      */
     MyOpenGLWidget(QWidget* parent);
 
+    /**
+     * @brief AddVertices
+     * @param vertices
+     */
     void AddVertices(QVector<Vertex> vertices);
 
-    void ClearData();
-
     /**
-     * @brief Loads the vertices required to draw circles into the GPU memory
-     * as a buffer.
+     * @brief ClearData
      */
-    void CreateCirclesBuffer();
+    void ClearData();
 
     /**
      * @brief Loads the vertices required to draw points and paths into the 
@@ -72,23 +73,23 @@ public:
      */
     void SetBoundingBox(QVector3D box);
 
+    void PrintMatrix(QMatrix4x4 matrix);
+
 public slots:
+    void ResetLighting();
+
     /**
      * @brief Resets the camera view to the default view.
      */
     void ResetView();
+
+    void SetAmbientValue(int ambientValue);
 
     /**
      * @brief Setter for the radius of the circles to be drawn.
      * @param radius The radius to be used.
      */
     void SetCircleRadius(int radius);
-
-    /**
-     * @brief Setter for whether or not circles will be drawn.
-     * @param draw If true circles will be drawn, if false, they will not.
-     */
-    void SetDrawCircles(bool draw);
     
     /**
      * @brief Setter for whether or not paths will be drawn.
@@ -128,8 +129,16 @@ protected:
     void resizeGL(int w, int h);
 
 private:
+    /**
+     * @brief getFar
+     * @return
+     */
     float getFar();
 
+    /**
+     * @brief setFar
+     * @param newFar
+     */
     void setFar(float newFar);
 
     /**
@@ -157,12 +166,6 @@ private:
     void setRotate(bool rotating);
 
     /**
-     * @brief Uses the vertex data stored in the circle buffer to draw atom 
-     * positions as circles to the drawing surface.
-     */
-    void drawCircles();
-
-    /**
      * @brief Uses the vertex data stored in the trajectory buffer to draw
      * atom paths to the drawing surface.
      */
@@ -173,15 +176,6 @@ private:
      * atom positions as points to the drawing surface.
      */
     void drawPoints();
-
-    /**
-     * @brief Given the center of a circle, generates 8 @Vertex objects
-     * representing points required to draw a circle using GL_TRIANGLE_FAN.
-     * @param center The @Vertex representing the center of the circle.
-     * @return A QVector of @Vertex objects representing the center of the
-     * circle followed by 7 points around the circumference.
-     */
-    QVector<Vertex> getCircleVertices(Vertex center);
 
     /**
      * @brief Handles behaviour on mouse movement.
@@ -207,6 +201,10 @@ private:
      */
     virtual void wheelEvent(QWheelEvent *event);
 
+    int m_Ambient;
+
+    float m_AmbientValue = 0.3;
+
     /**
      * @brief The number of atoms currently being drawn.
      */
@@ -222,26 +220,16 @@ private:
      * view transformation matrix.
      */
     int m_CameraToView;
-
-    /**
-     * @brief The buffer in which vertices required to draw circles are stored.
-     */
-    QOpenGLBuffer m_CircleBuffer;
     
     /**
      * @brief The radius of circles to be drawn.
      */
-    float m_CircleRadius = 1.0;
+    float m_CircleRadius;
 
     /**
      * @brief Matrix describing the default camera view.
      */
     QMatrix4x4 m_DefaultView;
-    
-    /**
-     * @brief Flag determining if circles are to be drawn.
-     */
-    bool m_DrawCircles = false;
     
     /**
      * @brief Flag determining if paths are to be drawn.
@@ -283,6 +271,10 @@ private:
      */
     float m_LastY;
 
+    int m_Lighting;
+
+    Camera3D m_LightingMatrix;
+
     /**
      * @brief The uniform location within the shader files of the model to
      * world transformation matrix.
@@ -295,14 +287,21 @@ private:
     float m_Near = 1;
 
     /**
-     * @brief The shader program used for drawing.
+     * @brief The shader program used for drawing paths.
      */
-    QOpenGLShaderProgram* m_Program;
+    QOpenGLShaderProgram* m_PathProgram;
+
+    /**
+     * @brief The shader program used for drawing points.
+     */
+    QOpenGLShaderProgram* m_PointProgram;
 
     /**
      * @brief The projection matrix to be used.
      */
     QMatrix4x4 m_Projection;
+
+    int m_Radius;
     
     /**
      * @brief The total number of frames in the data.
@@ -321,12 +320,6 @@ private:
     QOpenGLBuffer m_TrajBuffer;
 
     /**
-     * @brief Determines how objects will be drawn; either using OpenGL buffers
-     * or reading in vertex data every time PaintGL is called.
-     */
-    bool m_UseBuffers = false;
-
-    /**
      * @brief The @Vertex objects for each @Atom at each time step of the data.
      */
     QVector<QVector<Vertex>> m_Vertices;
@@ -341,16 +334,13 @@ private:
      * @brief The zoom to be applied to the image, as a fraction.
      */
     float m_Zoom = 1.0;
-    
-    /**
-     * @brief The number of vertices retured by @getCircleVertices().
-     */
-    const int CIRCLE_VERTICES = 8;
 
     /**
      * @brief The FOV used in gluPerspective() in radians.
      */
     const float FOV = 0.88;
+
+    const float RADIUS_SCALING = 10.0;
     
     /**
      * @brief Scaling factor influencing the speed at which rotation occurs.

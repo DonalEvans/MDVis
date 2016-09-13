@@ -9,6 +9,6 @@ uniform mat4 cameraToView;
 
 void main()
 {
-  gl_Position = cameraToView * worldToCamera * modelToWorld * vec4(pos, 1.0);
-  vColor = vec4(colour, 1.0);
+    gl_Position = cameraToView * worldToCamera * modelToWorld * vec4(pos, 1.0);
+    vColor = vec4(colour, 1.0);
 }

@@ -39,8 +39,6 @@ MainWindow::MainWindow(QWidget* parent) :
                      ui->m_OpenGLWidget, SLOT(SetDrawPaths(bool)));
     QObject::connect(ui->drawPointsCheck, SIGNAL(toggled(bool)),
                      ui->m_OpenGLWidget, SLOT(SetDrawPoints(bool)));
-    QObject::connect(ui->drawCirclesCheck, SIGNAL(toggled(bool)),
-                     ui->m_OpenGLWidget, SLOT(SetDrawCircles(bool)));
     QObject::connect(ui->m_CircleRadiusBox, SIGNAL(valueChanged(int)),
                      ui->m_OpenGLWidget, SLOT(SetCircleRadius(int)));
     QObject::connect(ui->m_FrameBox, SIGNAL(valueChanged(int)),
@@ -49,6 +47,10 @@ MainWindow::MainWindow(QWidget* parent) :
                      this, SLOT(calculateFPS()));
     QObject::connect(ui->m_ResetCamera, SIGNAL(released()),
                      ui->m_OpenGLWidget, SLOT(ResetView()));
+    QObject::connect(ui->m_ResetLighting, SIGNAL(released()),
+                     ui->m_OpenGLWidget, SLOT(ResetLighting()));
+    QObject::connect(ui->m_Ambient, SIGNAL(valueChanged(int)),
+                     ui->m_OpenGLWidget, SLOT(SetAmbientValue(int)));
 }
 
 MainWindow::~MainWindow()
