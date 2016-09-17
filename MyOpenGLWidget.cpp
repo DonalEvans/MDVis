@@ -96,15 +96,6 @@ void MyOpenGLWidget::initializeGL()
 
     m_CircleRadius = 1/RADIUS_SCALING;
 
-    m_PointProgram = new QOpenGLShaderProgram();
-    m_PointProgram->bind();
-    m_PointProgram->addShaderFromSourceFile(QOpenGLShader::Vertex,
-                                            ":/shaders/points.vert");
-    m_PointProgram->addShaderFromSourceFile(QOpenGLShader::Fragment,
-                                            ":/shaders/points.frag");
-    m_PointProgram->link();
-    m_PointProgram->release();
-
     m_PathProgram = new QOpenGLShaderProgram();
     m_PathProgram->bind();
     m_PathProgram->addShaderFromSourceFile(QOpenGLShader::Vertex,
@@ -113,6 +104,15 @@ void MyOpenGLWidget::initializeGL()
                                             ":/shaders/paths.frag");
     m_PathProgram->link();
     m_PathProgram->release();
+
+    m_PointProgram = new QOpenGLShaderProgram();
+    m_PointProgram->bind();
+    m_PointProgram->addShaderFromSourceFile(QOpenGLShader::Vertex,
+                                            ":/shaders/points.vert");
+    m_PointProgram->addShaderFromSourceFile(QOpenGLShader::Fragment,
+                                            ":/shaders/points.frag");
+    m_PointProgram->link();
+    m_PointProgram->release();
 
     m_TrajBuffer.create();
 }

@@ -13,12 +13,18 @@
 
 #include <QWidget>
 #include <QColor>
+#include <QVector>
+#include <QVector3D>
 
 class ColourLegend : public QWidget
 {
     Q_OBJECT
 
 public:
+    void SetColourMap(QVector<QVector3D> map);
+
+    void SetIsHorizontal(bool horizontal);
+
     /**
      * @brief Getter for the colour representing the maximum value.
      * @return The colour as a QColor.
@@ -69,6 +75,11 @@ protected:
     void paintEvent(QPaintEvent *event);
 
 private:
+
+    QVector<QVector3D> m_ColourMap;
+
+    bool m_IsHorizontal = true;
+
     /**
      * @brief The colour representing the maximum value.
      */

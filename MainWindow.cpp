@@ -51,6 +51,10 @@ MainWindow::MainWindow(QWidget* parent) :
                      ui->m_OpenGLWidget, SLOT(ResetLighting()));
     QObject::connect(ui->m_Ambient, SIGNAL(valueChanged(int)),
                      ui->m_OpenGLWidget, SLOT(SetAmbientValue(int)));
+    ui->m_ColourLegend->SetIsHorizontal(false);
+    ui->m_ColourSpinBox->setMaximum(m_ColourMaps.COLOUR_VECT.length()-1);
+    int map = ui->m_ColourSpinBox->value();
+    ui->m_ColourLegend->SetColourMap(m_ColourMaps.COLOUR_VECT[map]);
 }
 
 MainWindow::~MainWindow()
@@ -117,17 +121,18 @@ void MainWindow::mapColour()
     float range = m_MaxZ - m_MinZ;
     float zPos;
     int index;
+    int map = ui->m_ColourSpinBox->value();
     for (int i = 0; i < ui->m_OpenGLWidget->GetVerticesRef().length(); ++i)
     {
         for (int j = 0; j < ui->m_OpenGLWidget->GetVerticesRef()[i].length(); ++j)
         {
             zPos = ui->m_OpenGLWidget->GetVerticesRef()[i][j].GetPosition().z() - m_MinZ;
-            index = COLOUR_VECT.length()*zPos/range;
-            if (index >= COLOUR_VECT.length())
+            index = m_ColourMaps.COLOUR_VECT[map].length()*zPos/range;
+            if (index >= m_ColourMaps.COLOUR_VECT[map].length())
             {
-                index = COLOUR_VECT.length() - 1;
+                index = m_ColourMaps.COLOUR_VECT[map].length() - 1;
             }
-            ui->m_OpenGLWidget->GetVerticesRef()[i][j].SetColour(COLOUR_VECT[index]);
+            ui->m_OpenGLWidget->GetVerticesRef()[i][j].SetColour(m_ColourMaps.COLOUR_VECT[map][index]);
         }
     }
     printString("Colour mapping complete!",1000);
@@ -139,18 +144,6 @@ void MainWindow::mapColour()
     ui->m_LegendMax->setText(QString::number(m_MaxZ).left(5));
     ui->m_LegendMin->setText(QString::number(m_MinZ).left(5));
     ui->m_LegendMid->setText(QString::number((m_MaxZ - m_MinZ)/2).left(5));
-
-    QVector3D max = COLOUR_VECT.first()*255;
-    QColor maxColour(max.x(),max.y(),max.z());
-    ui->m_ColourLegend->SetMax(maxColour);
-
-    QVector3D mid = COLOUR_VECT[COLOUR_VECT.length()/2]*255;
-    QColor midColour(mid.x(),mid.y(),mid.z());
-    ui->m_ColourLegend->SetMin(midColour);
-
-    QVector3D min = COLOUR_VECT.last()*255;
-    QColor minColour(min.x(),min.y(),min.z());
-    ui->m_ColourLegend->SetMin(minColour);
 }
 
 void MainWindow::on_groSelectButton_clicked()
@@ -220,4 +213,14 @@ void MainWindow::setTimerStatus(bool animate)
         m_Timer->stop();
         m_FPSTimer->stop();
     }
+}
+
+void MainWindow::on_m_ColourSpinBox_valueChanged(int arg1)
+{
+    ui->m_ColourLegend->SetColourMap(m_ColourMaps.COLOUR_VECT[arg1]);
+}
+
+void MainWindow::on_m_ApplyColour_released()
+{
+    mapColour();
 }

@@ -8,6 +8,7 @@
 #include "Residue.h"
 #include "FileReader.h"
 #include "Vertex.h"
+#include "ColourMaps.h"
 
 namespace Ui {
 class MainWindow;
@@ -40,6 +41,10 @@ private slots:
     void setFrame(int frame){m_Frame = frame;}
 
     void setTimerStatus(bool);
+
+    void on_m_ColourSpinBox_valueChanged(int arg1);
+
+    void on_m_ApplyColour_released();
 
 private:
 
@@ -74,20 +79,7 @@ private:
     int m_RefreshTime = 1000;
     QVector<Residue*> m_ResidueVector;
     QTimer* m_Timer = new QTimer(this);
-
-    QVector<QVector3D> COLOUR_VECT = {
-        QVector3D(103,0,31)/255,
-        QVector3D(178,24,43)/255,
-        QVector3D(214,96,77)/255,
-        QVector3D(244,165,130)/255,
-        QVector3D(253,219,199)/255,
-        QVector3D(247,247,247)/255,
-        QVector3D(209,229,240)/255,
-        QVector3D(146,197,222)/255,
-        QVector3D(67,147,195)/255,
-        QVector3D(33,102,172)/255,
-        QVector3D(5,48,97)/255
-    };
+    ColourMaps m_ColourMaps;
 };
 
 #endif // MAINWINDOW_H

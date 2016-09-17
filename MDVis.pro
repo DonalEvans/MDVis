@@ -24,7 +24,8 @@ SOURCES += main.cpp\
     Vertex.cpp \
     ColourLegend.cpp \
     Transform3D.cpp \
-    Camera3D.cpp
+    Camera3D.cpp \
+    ColourMaps.cpp
 
 HEADERS  += MainWindow.h \
     Atom.h \
@@ -36,7 +37,8 @@ HEADERS  += MainWindow.h \
     Vertex.h \
     ColourLegend.h \
     Transform3D.h \
-    Camera3D.h
+    Camera3D.h \
+    ColourMaps.h
 
 FORMS    += mainwindow.ui
 

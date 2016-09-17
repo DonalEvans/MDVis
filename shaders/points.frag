@@ -24,7 +24,5 @@ void main()
 
     float diffuse = max(0.0, dot(lightDir, Normal));
 
-    vec4 ambientVec = vec4(ambient);
-
-    fColor = vColor*((vec4(1,1,1,1) * diffuse) + ambient);
+    fColor = vColor*(vec4(diffuse) + vec4(ambient));
 }
