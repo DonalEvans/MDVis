@@ -44,6 +44,24 @@ void MyOpenGLWidget::SetFrame(int frame)
     update();
 }
 
+void MyOpenGLWidget::SetMaxPathLength(int percentage)
+{
+    if (percentage > m_MinPathLength*HUNDRED)
+    {
+        m_MaxPathLength = (float)percentage/HUNDRED;
+        update();
+    }
+}
+
+void MyOpenGLWidget::SetMinPathLength(int percentage)
+{
+    if (percentage < m_MaxPathLength*HUNDRED)
+    {
+        m_MinPathLength = (float)percentage/HUNDRED;
+        update();
+    }
+}
+
 void MyOpenGLWidget::setLastY(float LastY)
 {
     m_LastY = LastY;
@@ -184,12 +202,14 @@ void MyOpenGLWidget::drawPaths()
 
     m_PathProgram->enableAttributeArray(0);
     m_PathProgram->enableAttributeArray(1);
+    int skippedAtoms = m_Atoms*m_MinPathLength;
+    int filterOffset = m_TotalFrames*skippedAtoms*Vertex::Stride();
     m_PathProgram->setAttributeBuffer(0, GL_FLOAT,
-                                  Vertex::PositionOffset(),
+                                  filterOffset + Vertex::PositionOffset(),
                                   Vertex::TUPLE_SIZE,
                                   Vertex::Stride());
     m_PathProgram->setAttributeBuffer(1, GL_FLOAT,
-                                  Vertex::ColourOffset(),
+                                  filterOffset + Vertex::ColourOffset(),
                                   Vertex::TUPLE_SIZE,
                                   Vertex::Stride());
 
@@ -201,7 +221,7 @@ void MyOpenGLWidget::drawPaths()
                                    m_Projection);
 
     glLineWidth(1.0f);
-    for (int i = 0; i < m_Atoms; ++i)
+    for (int i = 0; i < m_Atoms*(m_MaxPathLength-m_MinPathLength); ++i)
     {
         glDrawArrays(GL_LINE_STRIP, i*m_TotalFrames, m_TotalFrames);
     }
@@ -217,15 +237,17 @@ void MyOpenGLWidget::drawPoints()
     m_TrajBuffer.bind();
 
     int frameOffset = m_Frame*Vertex::Stride();
+    int skippedAtoms = m_Atoms*m_MinPathLength;
+    int filterOffset = m_TotalFrames*skippedAtoms*Vertex::Stride();
 
     m_PointProgram->enableAttributeArray(0);
     m_PointProgram->enableAttributeArray(1);
     m_PointProgram->setAttributeBuffer(0, GL_FLOAT,
-                                  frameOffset + Vertex::PositionOffset(),
+                                  filterOffset + frameOffset + Vertex::PositionOffset(),
                                   Vertex::TUPLE_SIZE,
                                   Vertex::Stride()*m_TotalFrames);
     m_PointProgram->setAttributeBuffer(1, GL_FLOAT,
-                                  frameOffset + Vertex::ColourOffset(),
+                                  filterOffset + frameOffset + Vertex::ColourOffset(),
                                   Vertex::TUPLE_SIZE,
                                   Vertex::Stride()*m_TotalFrames);
 
@@ -242,7 +264,7 @@ void MyOpenGLWidget::drawPoints()
 
     glPointSize(m_CircleRadius/m_Zoom);
 
-    glDrawArrays(GL_POINTS, 0, m_Atoms);
+    glDrawArrays(GL_POINTS, 0, m_Atoms*(m_MaxPathLength-m_MinPathLength));
 
     m_TrajBuffer.release();
     m_PointProgram->release();

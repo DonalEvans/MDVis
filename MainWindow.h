@@ -52,15 +52,17 @@ private slots:
 
 private:
 
-     QVector<Atom*>& getAtomVectorRef();
+    QVector<Atom*>& getAtomVectorRef();
 
-     void setAtomVector(QVector<Atom*> atomVector);
+    void setAtomVector(QVector<Atom*> atomVector);
 
     void filter();
 
     void mapColour();
 
     void resetLegend();
+
+    void sort();
 
     Ui::MainWindow *ui;
     QVector<Atom*> m_AtomVector;

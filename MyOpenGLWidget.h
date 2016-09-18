@@ -109,6 +109,10 @@ public slots:
      */
     void SetFrame(int frame);
 
+    void SetMaxPathLength(int percentage);
+
+    void SetMinPathLength(int percentage);
+
 protected:
     /**
      * @brief This function sets up the OpenGL environment and initializes
@@ -275,6 +279,10 @@ private:
 
     Camera3D m_LightingMatrix;
 
+    float m_MaxPathLength = 1;
+
+    float m_MinPathLength = 0;
+
     /**
      * @brief The uniform location within the shader files of the model to
      * world transformation matrix.
@@ -339,6 +347,8 @@ private:
      * @brief The FOV used in gluPerspective() in radians.
      */
     const float FOV = 0.88;
+
+    const int HUNDRED = 100;
 
     const float RADIUS_SCALING = 10.0;
     

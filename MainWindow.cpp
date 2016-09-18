@@ -3,6 +3,7 @@
 #include <QFileDialog>
 #include <QFile>
 #include <QTextStream>
+#include <algorithm>
 
 QVector<Atom*>& MainWindow::getAtomVectorRef()
 {
@@ -41,6 +42,10 @@ MainWindow::MainWindow(QWidget* parent) :
                      ui->m_OpenGLWidget, SLOT(ResetLighting()));
     QObject::connect(ui->m_Ambient, SIGNAL(valueChanged(int)),
                      ui->m_OpenGLWidget, SLOT(SetAmbientValue(int)));
+    QObject::connect(ui->m_MaxPathLength, SIGNAL(valueChanged(int)),
+                    ui->m_OpenGLWidget, SLOT(SetMaxPathLength(int)));
+    QObject::connect(ui->m_MinPathLength, SIGNAL(valueChanged(int)),
+                    ui->m_OpenGLWidget, SLOT(SetMinPathLength(int)));
     ui->m_ColourLegend->SetIsHorizontal(false);
     ui->m_ColourSpinBox->setMaximum(m_ColourMaps.COLOUR_VECT.length()-1);
     int map = ui->m_ColourSpinBox->value();
@@ -78,36 +83,31 @@ void MainWindow::drawNextFrame()
 
 void MainWindow::filter()
 {
-    printString("Filtering atoms...",MS_SECOND);
-
-    bool condition = true;
 
     QVector<Vertex> vertices;
     Vertex vertex;
 
     for (int i = 0; i < m_AtomVector.length(); ++i)
     {
-        if (condition)
+//        if (m_AtomVector[i]->GetPathLengthRef().last() < m_RealMapMin)
+//        {
+//            m_RealMapMin = m_AtomVector[i]->GetPathLengthRef().last();
+//        }
+//        else if (m_AtomVector[i]->GetPathLengthRef().last() > m_RealMapMax)
+//        {
+//            m_RealMapMax = m_AtomVector[i]->GetPathLengthRef().last();
+//        }
+        for (int j = 0; j < m_AtomVector[i]->GetTrajectoryRef().length(); ++j)
         {
-            if (m_AtomVector[i]->GetPathLengthRef().last() < m_RealMapMin)
-            {
-                m_RealMapMin = m_AtomVector[i]->GetPathLengthRef().last();
-            }
-            else if (m_AtomVector[i]->GetPathLengthRef().last() > m_RealMapMax)
-            {
-                m_RealMapMax = m_AtomVector[i]->GetPathLengthRef().last();
-            }
-            for (int j = 0; j < m_AtomVector[i]->GetTrajectoryRef().length(); ++j)
-            {
-                vertex.SetPosition(m_AtomVector[i]->GetTrajectoryRef()[j]);
-                vertices.append(vertex);
-            }
+            vertex.SetPosition(m_AtomVector[i]->GetTrajectoryRef()[j]);
+            vertices.append(vertex);
         }
         ui->m_OpenGLWidget->AddVertices(vertices);
         vertices.clear();
     }
+    m_RealMapMin = m_AtomVector.first()->GetPathLengthRef().last();
+    m_RealMapMax = m_AtomVector.last()->GetPathLengthRef().last();
     resetLegend();
-//    printString("Filtering complete!",MS_SECOND);
 }
 
 void MainWindow::mapColour()
@@ -126,7 +126,7 @@ void MainWindow::mapColour()
         for (int j = 0; j < ui->m_OpenGLWidget->GetVerticesRef()[i].length(); ++j)
         {
             mapValue = m_AtomVector[i]->GetPathLengthRef().last() - m_RealMapMin;
-            mapIndex = m_ColourMaps.COLOUR_VECT[map].length()*(1-(mapValue/range));
+            mapIndex = m_ColourMaps.COLOUR_VECT[map].length()*(mapValue/range);
             if (mapIndex >= m_ColourMaps.COLOUR_VECT[map].length())
             {
                 mapIndex = m_ColourMaps.COLOUR_VECT[map].length() - 1;
@@ -150,6 +150,18 @@ void MainWindow::resetLegend()
     ui->m_LegendMid->setText(QString::number((m_RealMapMax + m_RealMapMin)/2).left(5));
     m_UserMapMax = m_RealMapMax;
     m_UserMapMin = m_RealMapMin;
+}
+
+void MainWindow::sort()
+{
+    struct {
+            bool operator()(Atom* atom1, Atom* atom2)
+            {
+                return atom1->GetPathLengthRef().last()
+                     < atom2->GetPathLengthRef().last();
+            }
+        } compare;
+    std::sort(m_AtomVector.begin(), m_AtomVector.end(), compare);
 }
 
 void MainWindow::on_groSelectButton_clicked()
@@ -180,6 +192,7 @@ void MainWindow::on_loadDataButton_clicked()
 //        printString("Files Loaded", MS_SECOND);
         int totalFrames = m_AtomVector[0]->GetTrajectoryRef().length();
         ui->m_FrameBox->setMaximum(totalFrames - 1);
+        sort();
         filter();
         mapColour();
         ui->m_OpenGLWidget->SetBoundingBox(m_FileReader->GetSimBoxRef());
