@@ -14,39 +14,6 @@ void ColourLegend::SetIsHorizontal(bool horizontal)
     m_IsHorizontal = horizontal;
 }
 
-QColor ColourLegend::GetMax()
-{
-    return m_MaxColour;
-}
-
-void ColourLegend::SetMax(QColor colour)
-{
-    m_MaxColour = colour;
-    update();
-}
-
-QColor ColourLegend::GetMid()
-{
-    return m_MidColour;
-}
-
-void ColourLegend::SetMid(QColor colour)
-{
-    m_MidColour = colour;
-    update();
-}
-
-QColor ColourLegend::GetMin()
-{
-    return m_MinColour;
-}
-
-void ColourLegend::SetMin(QColor colour)
-{
-    m_MinColour = colour;
-    update();
-}
-
 ColourLegend::ColourLegend(QWidget* parent)
 {
 
@@ -57,13 +24,13 @@ void ColourLegend::paintEvent(QPaintEvent *event)
     QLinearGradient gradient;
     if (m_IsHorizontal)
     {
-        gradient.setStart(this->rect().topLeft());
-        gradient.setFinalStop(this->rect().topRight());
+        gradient.setStart(this->rect().topRight());
+        gradient.setFinalStop(this->rect().topLeft());
     }
     else
     {
-        gradient.setStart(this->rect().topLeft());
-        gradient.setFinalStop(this->rect().bottomLeft());
+        gradient.setStart(this->rect().bottomLeft());
+        gradient.setFinalStop(this->rect().topLeft());
     }
     QTextStream out(stdout);
     QColor colour;

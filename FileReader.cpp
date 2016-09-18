@@ -288,16 +288,16 @@ bool FileReader::LoadData(const QString& groFilePath,
         return false;
     }
 
-    createResidueVector();
+//    createResidueVector();
 
-//    emit consoleOutput("Calculating atom data",1000);
-//    for (int i = 0; i < GetAtomVectorRef().length(); ++i)
-//    {
+    emit consoleOutput("Calculating atom data",1000);
+    for (int i = 0; i < GetAtomVectorRef().length(); ++i)
+    {
 //        GetAtomVectorRef()[i]->CalculateVelocity();
-//        GetAtomVectorRef()[i]->CalculatePathLength();
+        GetAtomVectorRef()[i]->CalculatePathLength();
 //        GetAtomVectorRef()[i]->CalculatePathCurvature();
-//    }
-//    emit consoleOutput("Atom data calculated",1000);
+    }
+    emit consoleOutput("Atom data calculated",1000);
 
     return true;
 }

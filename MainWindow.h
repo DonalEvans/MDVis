@@ -30,21 +30,25 @@ private slots:
 
     void on_groSelectButton_clicked();
 
-    void on_m_RefreshRateSlider_valueChanged(int value);
-
-    void on_xtcSelectButton_clicked();
-
     void on_loadDataButton_clicked();
 
-    void printString(QString, int);
-
-    void setFrame(int frame){m_Frame = frame;}
-
-    void setTimerStatus(bool);
+    void on_m_ApplyColour_released();
 
     void on_m_ColourSpinBox_valueChanged(int arg1);
 
-    void on_m_ApplyColour_released();
+    void on_m_RefreshRateSlider_valueChanged(int value);
+
+    void printString(QString, int);
+
+    void setTimerStatus(bool);
+
+    void on_xtcSelectButton_clicked();
+
+    void on_m_LegendMin_textEdited(const QString &arg1);
+
+    void on_m_LegendMax_textEdited(const QString &arg1);
+
+    void on_m_ResetLegendScale_released();
 
 private:
 
@@ -52,34 +56,26 @@ private:
 
      void setAtomVector(QVector<Atom*> atomVector);
 
-    /**
-     * @brief Getter for the Residue vector.
-     * @return A reference to the Residue vector.
-     */
-     QVector<Residue*>& getResidueVectorRef();
-
-    /**
-     * @brief Setter for the Residue vector.
-     * @param residueVector The new value of the Residue vector.
-     */
-     void setResidueVector(QVector<Residue*> residueVector);
-
     void filter();
 
     void mapColour();
 
+    void resetLegend();
+
     Ui::MainWindow *ui;
     QVector<Atom*> m_AtomVector;
+    ColourMaps m_ColourMaps;
     FileReader* m_FileReader = new FileReader;
     int m_FPS = 0;
     QTimer* m_FPSTimer = new QTimer(this);
-    int m_Frame = 0;
-    float m_MaxZ = -INFINITY;
-    float m_MinZ = INFINITY;
+    float m_RealMapMax = -INFINITY;
+    float m_RealMapMin = INFINITY;
+    float m_UserMapMax;
+    float m_UserMapMin;
     int m_RefreshTime = 1000;
-    QVector<Residue*> m_ResidueVector;
     QTimer* m_Timer = new QTimer(this);
-    ColourMaps m_ColourMaps;
+
+    int MS_SECOND = 1000;
 };
 
 #endif // MAINWINDOW_H

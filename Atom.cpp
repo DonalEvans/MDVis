@@ -112,39 +112,14 @@ void Atom::AddTimeStep(float xPos,
     GetStepTimeRef().append(stepTime);
 }
 
-void Atom::calculateAtomData()
-{
-    QVector<QVector3D> traj = GetTrajectoryRef();
-    QVector<int> stepTime = GetStepTimeRef();
-    for (int i = 1; i < traj.length(); ++i)
-    {
-        QVector3D displacement = traj[i] - traj[i-1];
-
-        int timeStep = stepTime[i] - stepTime[i-1];
-        QVector3D velocity = displacement/timeStep;
-        GetVelocityRef().append(velocity);
-
-        float pathLength = displacement.length() + GetPathLengthRef()[i];
-        GetPathLengthRef().append(pathLength);
-
-        float thisTheta = acos(traj[i].z()/traj[i].length());
-        float thisPhi = atan(traj[i].y()/traj[i].x());
-        float prevTheta = acos(traj[i-1].z()/traj[i-1].length());
-        float prevPhi = atan(traj[i-1].y()/traj[i-1].x());
-        float angleChange = fabs(thisTheta - prevTheta) + fabs(thisPhi - prevPhi);
-
-        float curvature = angleChange + GetPathCurvatureRef()[i-1];
-        GetPathCurvatureRef().append(curvature);
-    }
-}
-
 void Atom::CalculatePathLength()
 {
     QVector<QVector3D> traj = GetTrajectoryRef();
     GetPathLengthRef().append(0);
+    QVector3D displacement;
     for (int i = 1; i < traj.length(); ++i)
     {
-        QVector3D displacement = traj[i] - traj[i-1];
+        displacement = traj[i] - traj[i-1];
         float pathLength = displacement.length() + GetPathLengthRef()[i-1];
         GetPathLengthRef().append(pathLength);
     }
@@ -172,11 +147,13 @@ void Atom::CalculateVelocity()
     QVector<QVector3D> traj = GetTrajectoryRef();
     QVector<int> stepTime = GetStepTimeRef();
     GetVelocityRef().append(QVector3D(0,0,0));
+    QVector3D displacement;
+    QVector3D velocity;
     for (int i = 1; i < traj.length(); ++i)
     {
-        QVector3D displacement = traj[i] - traj[i-1];
+        displacement = traj[i] - traj[i-1];
         int timeStep = stepTime[i] - stepTime[i-1];
-        QVector3D velocity = displacement/timeStep;
+        velocity = displacement/timeStep;
         GetVelocityRef().append(velocity);
     }
 }

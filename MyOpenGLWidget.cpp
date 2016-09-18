@@ -380,8 +380,6 @@ void MyOpenGLWidget::SetBoundingBox(QVector3D box)
     defaultView.lookAt(eye,center,up);
     m_Camera.SetDefaultView(defaultView);
     m_LightingMatrix.SetDefaultView(defaultView);
-    m_LightingMatrix.ResetView();
-    ResetView();
 }
 
 void MyOpenGLWidget::PrintMatrix(QMatrix4x4 matrix)

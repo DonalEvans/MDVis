@@ -197,12 +197,6 @@ private:
     void setVelocity(QVector<QVector3D> velocity);
 
     /**
-     * @brief Calculates the velocity, cumulative path length and cumulative
-     * path curvature for the Atom for all time steps.
-     */
-    void calculateAtomData();
-
-    /**
      * @brief m_AtomName The name of the Atom.
      */
     QString m_AtomName;

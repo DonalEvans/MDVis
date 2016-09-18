@@ -26,42 +26,6 @@ public:
     void SetIsHorizontal(bool horizontal);
 
     /**
-     * @brief Getter for the colour representing the maximum value.
-     * @return The colour as a QColor.
-     */
-    QColor GetMax();
-
-    /**
-     * @brief Setter for the colour representing the maximum value.
-     * @param colour The colour as a QColor.
-     */
-    void SetMax(QColor colour);
-
-    /**
-     * @brief Getter for the colour representing the midpoint value.
-     * @return The colour as a QColor.
-     */
-    QColor GetMid();
-
-    /**
-     * @brief Setter for the colour representing the midpoint value.
-     * @param colour The colour as a QColor.
-     */
-    void SetMid(QColor colour);
-
-    /**
-     * @brief Getter for the colour representing the minimum value.
-     * @return The colour as a QColor.
-     */
-    QColor GetMin();
-
-    /**
-     * @brief Setter for the colour representing the minimum value.
-     * @param colour The colour as a QColor.
-     */
-    void SetMin(QColor colour);
-
-    /**
      * @brief Constructor
      * @param parent The parent QWidget of this widget.
      */
@@ -79,21 +43,6 @@ private:
     QVector<QVector3D> m_ColourMap;
 
     bool m_IsHorizontal = true;
-
-    /**
-     * @brief The colour representing the maximum value.
-     */
-    QColor m_MaxColour = Qt::white;
-
-    /**
-     * @brief The colour representing the midpoint value.
-     */
-    QColor m_MidColour = Qt::white;
-
-    /**
-     * @brief The colour representing the minimum value.
-     */
-    QColor m_MinColour = Qt::white;
 };
 
 #endif // COLOURLEGEND_H
