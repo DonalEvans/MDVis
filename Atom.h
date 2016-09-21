@@ -130,15 +130,11 @@ public:
     void PrintAtom();
 
     /**
-     * @brief The number of spatial dimensions in the Atom data.
+     * @brief Prints the information contained within this Atom at the
+     * specified frame.
+     * @param frame The frame to be printed.
      */
-    static const int DIMENSIONS = 3;
-
-    /**
-     * @brief The offset within a line of .gro file data of the residue name
-     * string, in characters.
-     */
-    static const int RESIDUE_NAME_START = 5;
+    void PrintAtomFrame(int frame);
 
     /**
      * @brief The offset within a line of .gro file data of the atom name
@@ -147,12 +143,21 @@ public:
     static const int ATOM_NAME_START = 10;
 
     /**
+     * @brief The number of spatial dimensions in the Atom data.
+     */
+    static const int DIMENSIONS = 3;
+
+    /**
      * @brief The size in characters of the residue name and atom name
      * fields in the .gro file.
      */
     static const int GRO_FIELD_SIZE = 5;
 
-    void PrintAtomFrame(int frame);
+    /**
+     * @brief The offset within a line of .gro file data of the residue name
+     * string, in characters.
+     */
+    static const int RESIDUE_NAME_START = 5;
 
 private:
     /**
@@ -224,9 +229,33 @@ private:
     QVector<float> m_PathLength;
 
     /**
+     * @brief The value of Phi for the previous frame, used in calculating
+     * path curvature.
+     */
+    float m_PrevPhi = 0;
+
+    /**
+     * @brief The value of Theta for the previous frame, used in calculating
+     * path curvature.
+     */
+    float m_PrevTheta = 0;
+
+    /**
      * @brief A QVector containing the step time in ms for each step.
      */
     QVector<int> m_StepTime;
+
+    /**
+     * @brief The value of Phi for the current frame, used in calculating
+     * path curvature.
+     */
+    float m_ThisPhi;
+
+    /**
+     * @brief The value of Theta for the current frame, used in calculating
+     * path curvature.
+     */
+    float m_ThisTheta;
 
     /**
      * @brief A QVector containing the 3D position of the Atom at each
@@ -239,6 +268,12 @@ private:
      * time step.
      */
     QVector<QVector3D> m_Velocity;
+
+    /**
+     * @brief The number of miliseconds in a second, used for scaling
+     * velocity values.
+     */
+    const int MS_SECOND = 1000;
 };
 
 #endif // ATOM_H

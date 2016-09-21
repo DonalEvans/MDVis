@@ -32,7 +32,7 @@ void Atom::setParentResidueID(int parentResidueID)
     m_ParentResidueID = parentResidueID;
 }
 
-QVector<float> &Atom::GetPathCurvatureRef()
+QVector<float>& Atom::GetPathCurvatureRef()
 {
     return m_PathCurvature;
 }
@@ -42,7 +42,7 @@ void Atom::setPathCurvature(QVector<float> pathCurvature)
     m_PathCurvature = pathCurvature;
 }
 
-QVector<float> &Atom::GetPathLengthRef()
+QVector<float>& Atom::GetPathLengthRef()
 {
     return m_PathLength;
 }
@@ -52,7 +52,7 @@ void Atom::setPathLength(QVector<float> pathLength)
     m_PathLength = pathLength;
 }
 
-QVector<int> &Atom::GetStepTimeRef()
+QVector<int>& Atom::GetStepTimeRef()
 {
     return m_StepTime;
 }
@@ -62,7 +62,7 @@ void Atom::setStepTime(QVector<int> stepTime)
     m_StepTime = stepTime;
 }
 
-QVector<QVector3D> &Atom::GetTrajectoryRef()
+QVector<QVector3D>& Atom::GetTrajectoryRef()
 {
     return m_Trajectory;
 }
@@ -72,7 +72,7 @@ void Atom::setTrajectory(QVector<QVector3D> trajectory)
     m_Trajectory = trajectory;
 }
 
-QVector<QVector3D> &Atom::GetVelocityRef()
+QVector<QVector3D>& Atom::GetVelocityRef()
 {
     return m_Velocity;
 }
@@ -128,18 +128,22 @@ void Atom::CalculatePathLength()
 void Atom::CalculatePathCurvature()
 {
     QVector<QVector3D> traj = GetTrajectoryRef();
-    GetPathCurvatureRef().append(0);
     for (int i = 1; i < traj.length(); ++i)
     {
-        float thisTheta = acos(traj[i].z()/traj[i].length());
-        float thisPhi = atan(traj[i].y()/traj[i].x());
-        float prevTheta = acos(traj[i-1].z()/traj[i-1].length());
-        float prevPhi = atan(traj[i-1].y()/traj[i-1].x());
-        float angleChange = fabs(thisTheta - prevTheta) + fabs(thisPhi - prevPhi);
+        m_ThisTheta = acos((traj[i].z()-traj[i-1].z())
+                           /(traj[i]-traj[i-1]).length());
+        m_ThisPhi = atan((traj[i].y()-traj[i-1].y())
+                          /(traj[i].x()-traj[i-1].x()));
 
-        float curvature = angleChange + GetPathCurvatureRef()[i-1];
+        float curvature = fabs(m_ThisTheta - m_PrevTheta)
+                        + fabs(m_ThisPhi - m_PrevPhi);
         GetPathCurvatureRef().append(curvature);
+        m_PrevTheta = m_ThisTheta;
+        m_PrevPhi = m_ThisPhi;
+
     }
+    GetPathCurvatureRef()[0] = 0;
+    GetPathCurvatureRef().append(GetPathCurvatureRef().last());
 }
 
 void Atom::CalculateVelocity()
@@ -153,9 +157,10 @@ void Atom::CalculateVelocity()
     {
         displacement = traj[i] - traj[i-1];
         int timeStep = stepTime[i] - stepTime[i-1];
-        velocity = displacement/timeStep;
+        velocity = MS_SECOND*displacement/timeStep;
         GetVelocityRef().append(velocity);
     }
+    GetVelocityRef()[0] = GetVelocityRef()[1];
 }
 
 void Atom::PrintAtom()

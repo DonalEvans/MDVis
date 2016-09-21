@@ -23,7 +23,7 @@ MainWindow::MainWindow(QWidget* parent) :
     QObject::connect(m_FileReader, SIGNAL(consoleOutput(QString,int)),
                      this, SLOT(printString(QString,int)));
     QObject::connect(m_Timer, SIGNAL(timeout()),
-                     this, SLOT(drawNextFrame()));
+                     this, SLOT(incrementFrame()));
     QObject::connect(ui->m_AnimateCheck, SIGNAL(toggled(bool)),
                       this, SLOT(setTimerStatus(bool)));
     QObject::connect(ui->drawPathsCheck, SIGNAL(toggled(bool)),
@@ -35,7 +35,7 @@ MainWindow::MainWindow(QWidget* parent) :
     QObject::connect(ui->m_FrameBox, SIGNAL(valueChanged(int)),
                      ui->m_OpenGLWidget, SLOT(SetFrame(int)));
     QObject::connect(m_FPSTimer, SIGNAL(timeout()),
-                     this, SLOT(calculateFPS()));
+                     this, SLOT(outputFPS()));
     QObject::connect(ui->m_ResetCamera, SIGNAL(released()),
                      ui->m_OpenGLWidget, SLOT(ResetView()));
     QObject::connect(ui->m_ResetLighting, SIGNAL(released()),
@@ -46,12 +46,19 @@ MainWindow::MainWindow(QWidget* parent) :
                     ui->m_OpenGLWidget, SLOT(SetMaxPathLength(int)));
     QObject::connect(ui->m_MinPathLength, SIGNAL(valueChanged(int)),
                     ui->m_OpenGLWidget, SLOT(SetMinPathLength(int)));
+
     ui->m_ColourLegend->SetIsHorizontal(false);
-    ui->m_ColourSpinBox->setMaximum(m_ColourMaps.COLOUR_VECT.length()-1);
+    ui->m_ColourSpinBox->setMaximum(m_ColourMaps.GetNumberOfMaps()-1);
+
     int map = ui->m_ColourSpinBox->value();
-    ui->m_ColourLegend->SetColourMap(m_ColourMaps.COLOUR_VECT[map]);
+    ui->m_ColourLegend->SetColourMap(m_ColourMaps.GetMap(map));
+
     ui->m_LegendMax->setValidator(new QDoubleValidator(this));
     ui->m_LegendMin->setValidator(new QDoubleValidator(this));
+
+    ui->m_Mapping->addItem("Path Length",Qt::DisplayRole);
+    ui->m_Mapping->addItem("Velocity Magnitude",Qt::DisplayRole);
+    ui->m_Mapping->addItem("Path Curvature",Qt::DisplayRole);
 }
 
 MainWindow::~MainWindow()
@@ -59,13 +66,58 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::calculateFPS()
+void MainWindow::calculateDataRange()
 {
-    ui->statusBar->showMessage("FPS: " + QString::number(m_FPS), MS_SECOND);
-    m_FPS = 0;
+    if(ui->m_Mapping->currentText() == "Path Curvature")
+    {
+        m_FileReader->CalculatePathCurvature();
+        if(m_LastMappedTo != ui->m_Mapping->currentText())
+        {
+            m_RealMapMax = m_FileReader->GetMaxPathCurvature();
+            m_RealMapMin = m_FileReader->GetMinPathCurvature();
+            resetLegend();
+        }
+    }
+    else if(ui->m_Mapping->currentText() == "Path Length")
+    {
+        m_FileReader->CalculatePathLength();
+        if(m_LastMappedTo != ui->m_Mapping->currentText())
+        {
+            m_RealMapMax = m_FileReader->GetMaxPathLength();
+            m_RealMapMin = m_FileReader->GetMinPathLength();
+            resetLegend();
+        }
+    }
+    else if(ui->m_Mapping->currentText() == "Velocity Magnitude")
+    {
+        m_FileReader->CalculateVelocity();
+        if(m_LastMappedTo != ui->m_Mapping->currentText())
+        {
+            m_RealMapMax = m_FileReader->GetMaxVelocity();
+            m_RealMapMin = m_FileReader->GetMinVelocity();
+            resetLegend();
+        }
+    }
 }
 
-void MainWindow::drawNextFrame()
+void MainWindow::createVertices()
+{
+    QVector<Vertex> vertices;
+    Vertex vertex;
+
+    for (int i = 0; i < m_AtomVector.length(); ++i)
+    {
+        for (int j = 0; j < m_AtomVector[i]->GetTrajectoryRef().length(); ++j)
+        {
+            vertex.SetPosition(m_AtomVector[i]->GetTrajectoryRef()[j]);
+            vertices.append(vertex);
+        }
+        ui->m_OpenGLWidget->AddVertices(vertices);
+        vertices.clear();
+    }
+}
+
+void MainWindow::incrementFrame()
 {
     if (m_FileReader->GetAtomVectorRef().length() > 0)
     {
@@ -81,35 +133,6 @@ void MainWindow::drawNextFrame()
     }
 }
 
-void MainWindow::filter()
-{
-
-    QVector<Vertex> vertices;
-    Vertex vertex;
-
-    for (int i = 0; i < m_AtomVector.length(); ++i)
-    {
-//        if (m_AtomVector[i]->GetPathLengthRef().last() < m_RealMapMin)
-//        {
-//            m_RealMapMin = m_AtomVector[i]->GetPathLengthRef().last();
-//        }
-//        else if (m_AtomVector[i]->GetPathLengthRef().last() > m_RealMapMax)
-//        {
-//            m_RealMapMax = m_AtomVector[i]->GetPathLengthRef().last();
-//        }
-        for (int j = 0; j < m_AtomVector[i]->GetTrajectoryRef().length(); ++j)
-        {
-            vertex.SetPosition(m_AtomVector[i]->GetTrajectoryRef()[j]);
-            vertices.append(vertex);
-        }
-        ui->m_OpenGLWidget->AddVertices(vertices);
-        vertices.clear();
-    }
-    m_RealMapMin = m_AtomVector.first()->GetPathLengthRef().last();
-    m_RealMapMax = m_AtomVector.last()->GetPathLengthRef().last();
-    resetLegend();
-}
-
 void MainWindow::mapColour()
 {
     if (ui->m_OpenGLWidget->GetVerticesRef().length() == 0)
@@ -121,47 +144,43 @@ void MainWindow::mapColour()
     float mapValue;
     int mapIndex;
     int map = ui->m_ColourSpinBox->value();
+    bool isCurve = ui->m_Mapping->currentText() == "Path Curvature";
+    bool isLength = ui->m_Mapping->currentText() == "Path Length";
+    bool isVelocity = ui->m_Mapping->currentText() == "Velocity Magnitude";
     for (int i = 0; i < ui->m_OpenGLWidget->GetVerticesRef().length(); ++i)
     {
-        for (int j = 0; j < ui->m_OpenGLWidget->GetVerticesRef()[i].length(); ++j)
+        if(isCurve)
         {
-            mapValue = m_AtomVector[i]->GetPathLengthRef().last() - m_RealMapMin;
-            mapIndex = m_ColourMaps.COLOUR_VECT[map].length()*(mapValue/range);
-            if (mapIndex >= m_ColourMaps.COLOUR_VECT[map].length())
+            for (int j = 0; j < ui->m_OpenGLWidget->GetVerticesRef()[i].length(); ++j)
             {
-                mapIndex = m_ColourMaps.COLOUR_VECT[map].length() - 1;
+                mapValue = m_AtomVector[i]->GetPathCurvatureRef()[j] - m_RealMapMin;
+                mapIndex = m_ColourMaps.GetMap(map).length()*(mapValue/range);
+                ui->m_OpenGLWidget->GetVerticesRef()[i][j].SetColour(m_ColourMaps.GetColour(map,mapIndex));
             }
-            else if (mapIndex < 0)
+        }
+        else if(isLength)
+        {
+            for (int j = 0; j < ui->m_OpenGLWidget->GetVerticesRef()[i].length(); ++j)
             {
-                mapIndex = 0;
+                mapValue = m_AtomVector[i]->GetPathLengthRef().last() - m_RealMapMin;
+                mapIndex = m_ColourMaps.GetMap(map).length()*(mapValue/range);
+                ui->m_OpenGLWidget->GetVerticesRef()[i][j].SetColour(m_ColourMaps.GetColour(map,mapIndex));
             }
-            ui->m_OpenGLWidget->GetVerticesRef()[i][j].SetColour(m_ColourMaps.COLOUR_VECT[map][mapIndex]);
+        }
+        else if(isVelocity)
+        {
+            for (int j = 0; j < ui->m_OpenGLWidget->GetVerticesRef()[i].length(); ++j)
+            {
+                mapValue = m_AtomVector[i]->GetVelocityRef()[j].length() - m_RealMapMin;
+                mapIndex = m_ColourMaps.GetMap(map).length()*(mapValue/range);
+                ui->m_OpenGLWidget->GetVerticesRef()[i][j].SetColour(m_ColourMaps.GetColour(map,mapIndex));
+            }
         }
     }
+    m_LastMappedTo = ui->m_Mapping->currentText();
     ui->m_OpenGLWidget->CreateTrajBuffer();
     ui->m_OpenGLWidget->update();
     printString("Colour mapping complete!",MS_SECOND);
-}
-
-void MainWindow::resetLegend()
-{
-    ui->m_LegendMax->setText(QString::number(m_RealMapMax).left(5));
-    ui->m_LegendMin->setText(QString::number(m_RealMapMin).left(5));
-    ui->m_LegendMid->setText(QString::number((m_RealMapMax + m_RealMapMin)/2).left(5));
-    m_UserMapMax = m_RealMapMax;
-    m_UserMapMin = m_RealMapMin;
-}
-
-void MainWindow::sort()
-{
-    struct {
-            bool operator()(Atom* atom1, Atom* atom2)
-            {
-                return atom1->GetPathLengthRef().last()
-                     < atom2->GetPathLengthRef().last();
-            }
-        } compare;
-    std::sort(m_AtomVector.begin(), m_AtomVector.end(), compare);
 }
 
 void MainWindow::on_groSelectButton_clicked()
@@ -193,7 +212,9 @@ void MainWindow::on_loadDataButton_clicked()
         int totalFrames = m_AtomVector[0]->GetTrajectoryRef().length();
         ui->m_FrameBox->setMaximum(totalFrames - 1);
         sort();
-        filter();
+        createVertices();
+        calculateDataRange();
+        resetLegend();
         mapColour();
         ui->m_OpenGLWidget->SetBoundingBox(m_FileReader->GetSimBoxRef());
         ui->m_OpenGLWidget->ResetLighting();
@@ -201,11 +222,43 @@ void MainWindow::on_loadDataButton_clicked()
     }
 }
 
+void MainWindow::on_m_ApplyColour_released()
+{
+    calculateDataRange();
+    mapColour();
+}
+
+void MainWindow::on_m_ColourSpinBox_valueChanged(int arg1)
+{
+    ui->m_ColourLegend->SetColourMap(m_ColourMaps.GetMap(arg1));
+}
+
+void MainWindow::on_m_LegendMax_textEdited(const QString &arg1)
+{
+    m_UserMapMax = arg1.toFloat();
+    ui->m_LegendMid->setText(QString::number((m_UserMapMax + m_UserMapMin)/2).left(5));
+}
+
+void MainWindow::on_m_LegendMin_textEdited(const QString &arg1)
+{
+    m_UserMapMin = arg1.toFloat();
+    ui->m_LegendMid->setText(QString::number((m_UserMapMax + m_UserMapMin)/2).left(5));
+}
+
 void MainWindow::on_m_RefreshRateSlider_valueChanged(int value)
 {
     m_RefreshTime = MS_SECOND/value;
     setTimerStatus(false);
     setTimerStatus(ui->m_AnimateCheck->isChecked());
+}
+
+void MainWindow::on_m_ResetLegendScale_released()
+{
+    if (m_RealMapMax == -INFINITY || m_RealMapMin == INFINITY)
+    {
+        return;
+    }
+    resetLegend();
 }
 
 void MainWindow::on_xtcSelectButton_clicked()
@@ -220,6 +273,21 @@ void MainWindow::on_xtcSelectButton_clicked()
     }
 }
 
+void MainWindow::outputFPS()
+{
+    ui->statusBar->showMessage("FPS: " + QString::number(m_FPS), MS_SECOND);
+    m_FPS = 0;
+}
+
+void MainWindow::resetLegend()
+{
+    ui->m_LegendMax->setText(QString::number(m_RealMapMax,'f',3));
+    ui->m_LegendMin->setText(QString::number(m_RealMapMin,'f',3));
+    ui->m_LegendMid->setText(QString::number((m_RealMapMax + m_RealMapMin)/2,'f',3));
+    m_UserMapMax = m_RealMapMax;
+    m_UserMapMin = m_RealMapMin;
+}
+
 void MainWindow::printString(QString string, int duration)
 {
     QTextStream* out = new QTextStream(stdout, QIODevice::WriteOnly);
@@ -228,9 +296,9 @@ void MainWindow::printString(QString string, int duration)
     delete out;
 }
 
-void MainWindow::setTimerStatus(bool animate)
+void MainWindow::setTimerStatus(bool running)
 {
-    if (animate)
+    if (running)
     {
         m_Timer->start(m_RefreshTime);
         m_FPSTimer->start(MS_SECOND);
@@ -242,34 +310,15 @@ void MainWindow::setTimerStatus(bool animate)
     }
 }
 
-void MainWindow::on_m_ColourSpinBox_valueChanged(int arg1)
+void MainWindow::sort()
 {
-    ui->m_ColourLegend->SetColourMap(m_ColourMaps.COLOUR_VECT[arg1]);
-}
-
-void MainWindow::on_m_ApplyColour_released()
-{
-    mapColour();
-}
-
-void MainWindow::on_m_LegendMin_textEdited(const QString &arg1)
-{
-    m_UserMapMin = arg1.toFloat();
-    ui->m_LegendMid->setText(QString::number((m_UserMapMax + m_UserMapMin)/2).left(5));
-
-}
-
-void MainWindow::on_m_LegendMax_textEdited(const QString &arg1)
-{
-    m_UserMapMax = arg1.toFloat();
-    ui->m_LegendMid->setText(QString::number((m_UserMapMax + m_UserMapMin)/2).left(5));
-}
-
-void MainWindow::on_m_ResetLegendScale_released()
-{
-    if (m_RealMapMax == -INFINITY || m_RealMapMin == INFINITY)
-    {
-        return;
-    }
-    resetLegend();
+    struct {
+            bool operator()(Atom* atom1, Atom* atom2)
+            {
+                return atom1->GetPathLengthRef().last()
+                     < atom2->GetPathLengthRef().last();
+            }
+        } compare;
+    m_FileReader->CalculatePathLength();
+    std::sort(m_AtomVector.begin(), m_AtomVector.end(), compare);
 }

@@ -20,7 +20,7 @@ public:
 
     /**
      * @brief Getter for the Vector of Atoms that belong to the Residue.
-     * @return
+     * @return A QVector of Atom pointers.
      */
      QVector<Atom*>& GetAtomVectorRef();
 

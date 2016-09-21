@@ -44,6 +44,16 @@ void MyOpenGLWidget::SetFrame(int frame)
     update();
 }
 
+void MyOpenGLWidget::setLastY(float LastY)
+{
+    m_LastY = LastY;
+}
+
+void MyOpenGLWidget::setLastX(float LastX)
+{
+    m_LastX = LastX;
+}
+
 void MyOpenGLWidget::SetMaxPathLength(int percentage)
 {
     if (percentage > m_MinPathLength*HUNDRED)
@@ -60,16 +70,6 @@ void MyOpenGLWidget::SetMinPathLength(int percentage)
         m_MinPathLength = (float)percentage/HUNDRED;
         update();
     }
-}
-
-void MyOpenGLWidget::setLastY(float LastY)
-{
-    m_LastY = LastY;
-}
-
-void MyOpenGLWidget::setLastX(float LastX)
-{
-    m_LastX = LastX;
 }
 
 void MyOpenGLWidget::setPan(bool panning)
@@ -102,62 +102,6 @@ void MyOpenGLWidget::SetZoom(float zoom)
 MyOpenGLWidget::MyOpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
 {
 
-}
-
-void MyOpenGLWidget::initializeGL()
-{
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
-    glEnable(GL_POINT_SPRITE);
-    glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
-
-    m_CircleRadius = 1/RADIUS_SCALING;
-
-    m_PathProgram = new QOpenGLShaderProgram();
-    m_PathProgram->bind();
-    m_PathProgram->addShaderFromSourceFile(QOpenGLShader::Vertex,
-                                            ":/shaders/paths.vert");
-    m_PathProgram->addShaderFromSourceFile(QOpenGLShader::Fragment,
-                                            ":/shaders/paths.frag");
-    m_PathProgram->link();
-    m_PathProgram->release();
-
-    m_PointProgram = new QOpenGLShaderProgram();
-    m_PointProgram->bind();
-    m_PointProgram->addShaderFromSourceFile(QOpenGLShader::Vertex,
-                                            ":/shaders/points.vert");
-    m_PointProgram->addShaderFromSourceFile(QOpenGLShader::Fragment,
-                                            ":/shaders/points.frag");
-    m_PointProgram->link();
-    m_PointProgram->release();
-
-    m_TrajBuffer.create();
-}
-
-void MyOpenGLWidget::resizeGL(int w, int h)
-{
-
-}
-
-void MyOpenGLWidget::paintGL()
-{
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    m_Projection.setToIdentity();
-    m_Projection.perspective(qRadiansToDegrees(FOV)*m_Zoom,
-                             (float)this->width()/(float)this->height(),
-                             m_Near, m_Far);
-//    m_Projection.ortho(-116,0,-116,0,0,1000);
-
-    if(m_DrawPaths)
-    {
-        drawPaths();
-    }
-    if(m_DrawPoints)
-    {
-        drawPoints();
-    }
 }
 
 void MyOpenGLWidget::AddVertices(QVector<Vertex> vertices)
@@ -270,6 +214,37 @@ void MyOpenGLWidget::drawPoints()
     m_PointProgram->release();
 }
 
+void MyOpenGLWidget::initializeGL()
+{
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+    glEnable(GL_POINT_SPRITE);
+    glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
+
+    m_CircleRadius = 1/RADIUS_SCALING;
+
+    m_PathProgram = new QOpenGLShaderProgram();
+    m_PathProgram->bind();
+    m_PathProgram->addShaderFromSourceFile(QOpenGLShader::Vertex,
+                                            ":/shaders/paths.vert");
+    m_PathProgram->addShaderFromSourceFile(QOpenGLShader::Fragment,
+                                            ":/shaders/paths.frag");
+    m_PathProgram->link();
+    m_PathProgram->release();
+
+    m_PointProgram = new QOpenGLShaderProgram();
+    m_PointProgram->bind();
+    m_PointProgram->addShaderFromSourceFile(QOpenGLShader::Vertex,
+                                            ":/shaders/points.vert");
+    m_PointProgram->addShaderFromSourceFile(QOpenGLShader::Fragment,
+                                            ":/shaders/points.frag");
+    m_PointProgram->link();
+    m_PointProgram->release();
+
+    m_TrajBuffer.create();
+}
+
 void MyOpenGLWidget::mouseMoveEvent(QMouseEvent *event)
 {
     float dx = event->x() - m_LastX;
@@ -363,16 +338,32 @@ void MyOpenGLWidget::mouseReleaseEvent(QMouseEvent *event)
     update();
 }
 
-void MyOpenGLWidget::wheelEvent(QWheelEvent *event)
+void MyOpenGLWidget::paintGL()
 {
-    if (event->delta() < 0 && m_Zoom < ZOOM_SPEED)
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    m_Projection.setToIdentity();
+    m_Projection.perspective(qRadiansToDegrees(FOV)*m_Zoom,
+                             (float)this->width()/(float)this->height(),
+                             m_Near, m_Far);
+
+    if(m_DrawPaths)
     {
-        SetZoom(m_Zoom*ZOOM_SPEED);
+        drawPaths();
     }
-    else if (event->delta() > 0)
+    if(m_DrawPoints)
     {
-        SetZoom(m_Zoom/ZOOM_SPEED);
+        drawPoints();
     }
+}
+
+void MyOpenGLWidget::PrintMatrix(QMatrix4x4 matrix)
+{
+    QTextStream out(stdout);
+    out << matrix(0,0) << " " << matrix(0,1) << " " << matrix(0,2) << " " << matrix(0,3) << endl;
+    out << matrix(1,0) << " " << matrix(1,1) << " " << matrix(1,2) << " " << matrix(1,3) << endl;
+    out << matrix(2,0) << " " << matrix(2,1) << " " << matrix(2,2) << " " << matrix(2,3) << endl;
+    out << matrix(3,0) << " " << matrix(3,1) << " " << matrix(3,2) << " " << matrix(3,3) << endl;
 }
 
 void MyOpenGLWidget::ResetLighting()
@@ -387,13 +378,18 @@ void MyOpenGLWidget::ResetView()
     SetZoom(1.0);
 }
 
+void MyOpenGLWidget::resizeGL(int w, int h)
+{
+
+}
+
 void MyOpenGLWidget::SetBoundingBox(QVector3D box)
 {
     m_Transform.ResetRotation();
     m_Transform.ResetTranslation();
     m_Transform.Translate(-box/2);
 
-    setFar(box.x()*3);
+    setFar(box.x()*FAR_SCALING);
 
     QMatrix4x4 defaultView;
     QVector3D eye(0,0,-m_Far/2);
@@ -404,11 +400,14 @@ void MyOpenGLWidget::SetBoundingBox(QVector3D box)
     m_LightingMatrix.SetDefaultView(defaultView);
 }
 
-void MyOpenGLWidget::PrintMatrix(QMatrix4x4 matrix)
+void MyOpenGLWidget::wheelEvent(QWheelEvent *event)
 {
-    QTextStream out(stdout);
-    out << matrix(0,0) << " " << matrix(0,1) << " " << matrix(0,2) << " " << matrix(0,3) << endl;
-    out << matrix(1,0) << " " << matrix(1,1) << " " << matrix(1,2) << " " << matrix(1,3) << endl;
-    out << matrix(2,0) << " " << matrix(2,1) << " " << matrix(2,2) << " " << matrix(2,3) << endl;
-    out << matrix(3,0) << " " << matrix(3,1) << " " << matrix(3,2) << " " << matrix(3,3) << endl;
+    if (event->delta() < 0 && m_Zoom < ZOOM_SPEED)
+    {
+        SetZoom(m_Zoom*ZOOM_SPEED);
+    }
+    else if (event->delta() > 0)
+    {
+        SetZoom(m_Zoom/ZOOM_SPEED);
+    }
 }

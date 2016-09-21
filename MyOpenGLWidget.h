@@ -49,13 +49,13 @@ public:
     MyOpenGLWidget(QWidget* parent);
 
     /**
-     * @brief AddVertices
-     * @param vertices
+     * @brief Appends a QVector of @Vertex objects to @m_Vertices.
+     * @param vertices The QVector of @Vertex objects to be appended.
      */
     void AddVertices(QVector<Vertex> vertices);
 
     /**
-     * @brief ClearData
+     * @brief Clears all data currently stored in this object.
      */
     void ClearData();
 
@@ -66,6 +66,12 @@ public:
     void CreateTrajBuffer();
 
     /**
+     * @brief Convenience function for printint the contents of a 4x4 matrix.
+     * @param matrix The QMatrix4x4 to be printed.
+     */
+    void PrintMatrix(QMatrix4x4 matrix);
+
+    /**
      * @brief Sets the size of the bounding box for the data, allowing
      * initial camera position to be set.
      * @param box a QVector3D represening the boundaries of the simulation
@@ -73,9 +79,11 @@ public:
      */
     void SetBoundingBox(QVector3D box);
 
-    void PrintMatrix(QMatrix4x4 matrix);
-
 public slots:
+    /**
+     * @brief Resets the position of the diffuse lighting source to the default
+     * view.
+     */
     void ResetLighting();
 
     /**
@@ -83,6 +91,11 @@ public slots:
      */
     void ResetView();
 
+    /**
+     * @brief Setter for the intensity of the ambient lighting.
+     * @param ambientValue The intensity of the ambient lighting, as an integer
+     * from 0 - 100.
+     */
     void SetAmbientValue(int ambientValue);
 
     /**
@@ -109,8 +122,20 @@ public slots:
      */
     void SetFrame(int frame);
 
+    /**
+     * @brief Sets the maximum path length to be drawn, as a percentage of the
+     * total path length range.
+     * @param percentage The maxmimum path length to be drawn, as a percentage
+     * of the total path length.
+     */
     void SetMaxPathLength(int percentage);
 
+    /**
+     * @brief Sets the minimum path length to be drawn, as a percentage of the
+     * total path length range.
+     * @param percentage The minmimum path length to be drawn, as a percentage
+     * of the total path length.
+     */
     void SetMinPathLength(int percentage);
 
 protected:
@@ -134,14 +159,16 @@ protected:
 
 private:
     /**
-     * @brief getFar
-     * @return
+     * @brief Getter for the far flipping plane.
+     * @return The distance from the camera to teh far clipping plane
+     * as a float.
      */
     float getFar();
 
     /**
-     * @brief setFar
-     * @param newFar
+     * @brief Setter for the far clipping plane.
+     * @param newFar The distance from the camera to teh far clipping plane
+     * as a float.
      */
     void setFar(float newFar);
 
@@ -159,13 +186,13 @@ private:
 
     /**
      * @brief Setter for if panning is occurring.
-     * @param panning
+     * @param panning True if panning, false otherwise.
      */
     void setPan(bool panning);
 
     /**
      * @brief Setter for if rotation is occurring.
-     * @param rotating
+     * @param rotating True if rotating, false otherwise.
      */
     void setRotate(bool rotating);
 
@@ -183,30 +210,31 @@ private:
 
     /**
      * @brief Handles behaviour on mouse movement.
-     * @param event
+     * @param event The triggering QMouseEvent.
      */
     virtual void mouseMoveEvent(QMouseEvent *event);
 
     /**
      * @brief Handles behaviour on mouse button press.
-     * @param event
+     * @param event The triggering QMouseEvent.
      */
     virtual void mousePressEvent(QMouseEvent *event);
 
     /**
      * @brief Handles behaviour on mouse button release.
-     * @param event
+     * @param event The triggering QMouseEvent.
      */
     virtual void mouseReleaseEvent(QMouseEvent *event);
 
     /**
      * @brief Handles behaviour on mouse wheel scroll.
-     * @param event
+     * @param event The triggering QWheelEvent.
      */
     virtual void wheelEvent(QWheelEvent *event);
 
-    int m_Ambient;
-
+    /**
+     * @brief The intensity of the ambient lighting, as a float.
+     */
     float m_AmbientValue = 0.3;
 
     /**
@@ -226,7 +254,7 @@ private:
     int m_CameraToView;
     
     /**
-     * @brief The radius of circles to be drawn.
+     * @brief The radius of circles to be drawn, as a float.
      */
     float m_CircleRadius;
 
@@ -246,7 +274,7 @@ private:
     bool m_DrawPoints = false;
 
     /**
-     * @brief The far clipping plane.
+     * @brief The distance from the far clipping plane to the camera.
      */
     float m_Far = 200;
 
@@ -275,12 +303,21 @@ private:
      */
     float m_LastY;
 
-    int m_Lighting;
-
+    /**
+     * @brief The object controling the movement of the diffuse lighting source.
+     */
     Camera3D m_LightingMatrix;
 
+    /**
+     * @brief The maximum path length to be drawn, as a fraction of total path
+     * length range.
+     */
     float m_MaxPathLength = 1;
 
+    /**
+     * @brief The minimum path length to be drawn, as a fraction of total path
+     * length range.
+     */
     float m_MinPathLength = 0;
 
     /**
@@ -290,7 +327,7 @@ private:
     int m_ModelToWorld;
 
     /**
-     * @brief The near clipping plane.
+     * @brief The distance from the camera to the near clipping plane.
      */
     float m_Near = 1;
 
@@ -308,24 +345,22 @@ private:
      * @brief The projection matrix to be used.
      */
     QMatrix4x4 m_Projection;
-
-    int m_Radius;
     
     /**
      * @brief The total number of frames in the data.
      */
     int m_TotalFrames;
-    
-    /**
-     * @brief The Transform3D object to be used for handling transformations.
-     */
-    Transform3D m_Transform;
 
     /**
      * @brief The buffer in which vertices used for drawing points and paths
      * are stored.
      */
     QOpenGLBuffer m_TrajBuffer;
+    
+    /**
+     * @brief The Transform3D object to be used for handling transformations.
+     */
+    Transform3D m_Transform;
 
     /**
      * @brief The @Vertex objects for each @Atom at each time step of the data.
@@ -344,12 +379,25 @@ private:
     float m_Zoom = 1.0;
 
     /**
-     * @brief The FOV used in gluPerspective() in radians.
+     * @brief A scaling factor used when determining the appropriate far
+     * clipping plane for the simulation space size.
+     */
+    const int FAR_SCALING = 3;
+
+    /**
+     * @brief The FOV used in gluPerspective(), in radians.
      */
     const float FOV = 0.88;
 
+    /**
+     * @brief The number one hundred as an int.
+     */
     const int HUNDRED = 100;
 
+    /**
+     * @brief A scaling factor used when setting the radius of circles to be
+     * drawn.
+     */
     const float RADIUS_SCALING = 10.0;
     
     /**

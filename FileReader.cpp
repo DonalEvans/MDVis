@@ -4,7 +4,7 @@
 #include <QFile>
 #include <QTextStream>
 
-QVector<Atom*> &FileReader::GetAtomVectorRef()
+QVector<Atom*>& FileReader::GetAtomVectorRef()
 {
     return m_AtomVector;
 }
@@ -22,6 +22,36 @@ QStringList FileReader::getGroList()
 void FileReader::setGroList(QStringList& groList)
 {
     m_GroList = groList;
+}
+
+float FileReader::GetMaxPathCurvature()
+{
+    return m_MaxPathCurvature;
+}
+
+float FileReader::GetMaxPathLength()
+{
+    return m_MaxPathLength;
+}
+
+float FileReader::GetMaxVelocity()
+{
+    return m_MaxVelocity;
+}
+
+float FileReader::GetMinPathCurvature()
+{
+    return m_MinPathCurvature;
+}
+
+float FileReader::GetMinPathLength()
+{
+    return m_MinPathLength;
+}
+
+float FileReader::GetMinVelocity()
+{
+    return m_MinVelocity;
 }
 
 int FileReader::getNumOfResidues()
@@ -61,6 +91,81 @@ FileReader::FileReader()
 
 }
 
+void FileReader::CalculatePathCurvature()
+{
+    if(!m_PathCurvature)
+    {
+        emit consoleOutput("Calculating Path Curvature",0);
+        QVector<float> pathCurve;
+        for (int i = 0; i < GetAtomVectorRef().length(); ++i)
+        {
+            GetAtomVectorRef()[i]->CalculatePathCurvature();
+            pathCurve = GetAtomVectorRef()[i]->GetPathCurvatureRef();
+            for (int j = 0; j < pathCurve.length(); ++j)
+            {
+                if (pathCurve[j] > m_MaxPathCurvature)
+                {
+                    m_MaxPathCurvature = pathCurve[j];
+                }
+                else if (pathCurve[j] < m_MinPathCurvature)
+                {
+                    m_MinPathCurvature = pathCurve[j];
+                }
+            }
+        }
+        m_PathCurvature = true;
+    }
+}
+
+void FileReader::CalculatePathLength()
+{
+    if(!m_PathLength)
+    {
+        emit consoleOutput("Calculating Path Length",0);
+        QVector<float> pathLength;
+        for (int i = 0; i < GetAtomVectorRef().length(); ++i)
+        {
+            GetAtomVectorRef()[i]->CalculatePathLength();
+            pathLength = GetAtomVectorRef()[i]->GetPathLengthRef();
+            if (pathLength.last() > m_MaxPathLength)
+            {
+                m_MaxPathLength = pathLength.last();
+            }
+            else if (pathLength.last() < m_MinPathLength)
+            {
+                m_MinPathLength = pathLength.last();
+            }
+        }
+        m_PathLength = true;
+    }
+}
+
+void FileReader::CalculateVelocity()
+{
+    if(!m_Velocity)
+    {
+        emit consoleOutput("Calculating velocity magnitude",0);
+        QVector<QVector3D> velocity;
+        for (int i = 0; i < GetAtomVectorRef().length(); ++i)
+        {
+            GetAtomVectorRef()[i]->CalculateVelocity();
+            velocity = GetAtomVectorRef()[i]->GetVelocityRef();
+            for (int j = 0; j < velocity.length(); ++j)
+            {
+                if (velocity[j].length() > m_MaxVelocity)
+                {
+                    m_MaxVelocity = velocity[j].length();
+                }
+                else if (velocity[j].length() < m_MinVelocity)
+                {
+                    m_MinVelocity = velocity[j].length();
+                }
+            }
+        }
+        m_Velocity = true;
+    }
+}
+
 void FileReader::addResidue(Residue* residue, int index)
 {
     GetResidueVectorRef()[index] = residue;
@@ -76,6 +181,9 @@ void FileReader::clearAtomVector()
     }
     GetAtomVectorRef().clear();
     GetAtomVectorRef().squeeze();
+    m_PathCurvature = false;
+    m_PathLength = false;
+    m_Velocity = false;
 }
 
 void FileReader::clearResidueVector()
@@ -289,15 +397,6 @@ bool FileReader::LoadData(const QString& groFilePath,
     }
 
 //    createResidueVector();
-
-    emit consoleOutput("Calculating atom data",1000);
-    for (int i = 0; i < GetAtomVectorRef().length(); ++i)
-    {
-//        GetAtomVectorRef()[i]->CalculateVelocity();
-        GetAtomVectorRef()[i]->CalculatePathLength();
-//        GetAtomVectorRef()[i]->CalculatePathCurvature();
-    }
-    emit consoleOutput("Atom data calculated",1000);
 
     return true;
 }

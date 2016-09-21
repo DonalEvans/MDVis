@@ -29,6 +29,48 @@ public:
     QVector<Atom*>& GetAtomVectorRef();
 
     /**
+     * @brief Getter for the maximum path curvature value among the atoms
+     * in @m_AtomVector.
+     * @return The value of the maximum path curvature, as a float.
+     */
+    float GetMaxPathCurvature();
+
+    /**
+     * @brief Getter for the maximum path length value among the atoms
+     * in @m_AtomVector.
+     * @return The value of the maximum path length, as a float.
+     */
+    float GetMaxPathLength();
+
+    /**
+     * @brief Getter for the maximum velocity value among the atoms
+     * in @m_AtomVector.
+     * @return The value of the maximum velocity, as a float.
+     */
+    float GetMaxVelocity();
+
+    /**
+     * @brief Getter for the minimum path curvature value among the atoms
+     * in @m_AtomVector.
+     * @return The value of the minimum path curvature, as a float.
+     */
+    float GetMinPathCurvature();
+
+    /**
+     * @brief Getter for the minimum path length value among the atoms
+     * in @m_AtomVector.
+     * @return The value of the minimum path length, as a float.
+     */
+    float GetMinPathLength();
+
+    /**
+     * @brief Getter for the minimum velocity value among the atoms
+     * in @m_AtomVector.
+     * @return The value of the minimum velocity, as a float.
+     */
+    float GetMinVelocity();
+
+    /**
      * @brief Getter for the vector containing the Residue pointers from
      *        the .gro file.
      * @return QVector of Residue pointers.
@@ -54,6 +96,21 @@ public:
     FileReader();
 
     /**
+     * @brief Calculates the path curvature for every @Atom in @m_AtomVector.
+     */
+    void CalculatePathCurvature();
+
+    /**
+     * @brief Calculates the path length for every @Atom in @m_AtomVector.
+     */
+    void CalculatePathLength();
+
+    /**
+     * @brief Calculates the velocity for every @Atom in @m_AtomVector.
+     */
+    void CalculateVelocity();
+
+    /**
      * @brief Reads data from .gro and .xtc files and stores it.
      * @param groFilePath The file path of the .gro file.
      * @param xtcFilePath The file path of the .xtc file.
@@ -67,7 +124,8 @@ signals:
     /**
      * @brief Used to output messages from the class.
      * @param output The string to be output.
-     * @param duration The duration in ms that the message will be displayed.
+     * @param duration The duration in ms that the message will be displayed
+     * on a QStatusBar.
      */
     void consoleOutput(QString output, int duration);
 
@@ -75,7 +133,7 @@ private:
 
     /**
      * @brief Setter for the Atom pointer vector.
-     * @param atomVector A QVector of Atoms.
+     * @param atomVector A QVector of Atom pointers.
      */
     void setAtomVector(QVector<Atom*> atomVector);
 
@@ -89,7 +147,7 @@ private:
      * @brief Setter for the list of Strings in the .gro file.
      * @param groList A list of Strings.
      */
-    void setGroList(QStringList &groList);
+    void setGroList(QStringList& groList);
 
     /**
      * @brief Getter for the number of unique Residues in the .gro file.
@@ -179,9 +237,57 @@ private:
     QStringList m_GroList;
 
     /**
+     * @brief The value of the maximum path curvature value among the atoms
+     * in @m_AtomVector, as a float.
+     */
+    float m_MaxPathCurvature = -INFINITY;
+
+    /**
+     * @brief The value of the maximum path length value among the atoms
+     * in @m_AtomVector, as a float.
+     */
+    float m_MaxPathLength = -INFINITY;
+
+    /**
+     * @brief The value of the maximum velocity value among the atoms
+     * in @m_AtomVector, as a float.
+     */
+    float m_MaxVelocity = -INFINITY;
+
+    /**
+     * @brief The value of the minimum path curvature value among the atoms
+     * in @m_AtomVector, as a float.
+     */
+    float m_MinPathCurvature = INFINITY;
+
+    /**
+     * @brief The value of the minimum path length value among the atoms
+     * in @m_AtomVector, as a float.
+     */
+    float m_MinPathLength = INFINITY;
+
+    /**
+     * @brief The value of the minimum velocity value among the atoms
+     * in @m_AtomVector, as a float.
+     */
+    float m_MinVelocity = INFINITY;
+
+    /**
      * @brief The number of unique Residues in the .gro file.
      */
     int m_NumOfResidues;
+
+    /**
+     * @brief Flag signifying if the path curvature has already been calculated for
+     * the atoms in @m_AtomVector or not.
+     */
+    bool m_PathCurvature;
+
+    /**
+     * @brief Flag signifying if the path length has already been calculated for
+     * the atoms in @m_AtomVector or not.
+     */
+    bool m_PathLength;
 
     /**
      * @brief A vector of all the Residues in the .gro file.
@@ -192,6 +298,12 @@ private:
      * @brief The dimensions of the computational box in which the Atoms exist.
      */
     QVector3D m_SimBox;
+
+    /**
+     * @brief Flag signifying if the velocity has already been calculated for
+     * the atoms in @m_AtomVector or not.
+     */
+    bool m_Velocity;
 
     /**
      * @brief Xtc position data is stored in reduced precision. This scaling
