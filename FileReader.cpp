@@ -91,6 +91,11 @@ FileReader::FileReader()
 
 }
 
+void FileReader::addResidue(Residue* residue, int index)
+{
+    GetResidueVectorRef()[index] = residue;
+}
+
 void FileReader::CalculatePathCurvature()
 {
     if(!m_PathCurvature)
@@ -114,6 +119,7 @@ void FileReader::CalculatePathCurvature()
             }
         }
         m_PathCurvature = true;
+        emit consoleOutput("Path Curvature Calculated",0);
     }
 }
 
@@ -137,6 +143,7 @@ void FileReader::CalculatePathLength()
             }
         }
         m_PathLength = true;
+        emit consoleOutput("Path Length Calculated",0);
     }
 }
 
@@ -145,30 +152,26 @@ void FileReader::CalculateVelocity()
     if(!m_Velocity)
     {
         emit consoleOutput("Calculating velocity magnitude",0);
-        QVector<QVector3D> velocity;
+        QVector<float> velocity;
         for (int i = 0; i < GetAtomVectorRef().length(); ++i)
         {
             GetAtomVectorRef()[i]->CalculateVelocity();
             velocity = GetAtomVectorRef()[i]->GetVelocityRef();
             for (int j = 0; j < velocity.length(); ++j)
             {
-                if (velocity[j].length() > m_MaxVelocity)
+                if (velocity[j] > m_MaxVelocity)
                 {
-                    m_MaxVelocity = velocity[j].length();
+                    m_MaxVelocity = velocity[j];
                 }
-                else if (velocity[j].length() < m_MinVelocity)
+                else if (velocity[j] < m_MinVelocity)
                 {
-                    m_MinVelocity = velocity[j].length();
+                    m_MinVelocity = velocity[j];
                 }
             }
         }
         m_Velocity = true;
+        emit consoleOutput("Velocity Calculated",0);
     }
-}
-
-void FileReader::addResidue(Residue* residue, int index)
-{
-    GetResidueVectorRef()[index] = residue;
 }
 
 void FileReader::clearAtomVector()

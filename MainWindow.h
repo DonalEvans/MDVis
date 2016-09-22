@@ -106,7 +106,7 @@ private slots:
     void on_xtcSelectButton_clicked();
 
     /**
-     * @brief Outputs the current value of @m_FPS to the status bar.
+     * @brief Outputs the current value of m_FPS to the status bar.
      */
     void outputFPS();
 
@@ -158,8 +158,8 @@ private:
     void mapColour();
 
     /**
-     * @brief Resets the maximum and minimum values of the legend to the values
-     * determined by @calculateDataRange();
+     * @brief Resets the maximum and minimum values of the legend to the
+     * default values.
      */
     void resetLegend();
 
@@ -220,7 +220,7 @@ private:
     float m_RealMapMin = INFINITY;
 
     /**
-     * @brief The timeout value in ms of @m_Timer.
+     * @brief The time between painting events when animation is occurring.
      */
     int m_RefreshTime = 1000;
 

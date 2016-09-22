@@ -72,12 +72,12 @@ void Atom::setTrajectory(QVector<QVector3D> trajectory)
     m_Trajectory = trajectory;
 }
 
-QVector<QVector3D>& Atom::GetVelocityRef()
+QVector<float>& Atom::GetVelocityRef()
 {
     return m_Velocity;
 }
 
-void Atom::setVelocity(QVector<QVector3D> velocity)
+void Atom::setVelocity(QVector<float> velocity)
 {
     m_Velocity = velocity;
 }
@@ -148,16 +148,14 @@ void Atom::CalculatePathCurvature()
 
 void Atom::CalculateVelocity()
 {
-    QVector<QVector3D> traj = GetTrajectoryRef();
-    QVector<int> stepTime = GetStepTimeRef();
-    GetVelocityRef().append(QVector3D(0,0,0));
+    GetVelocityRef().append(0);
     QVector3D displacement;
-    QVector3D velocity;
-    for (int i = 1; i < traj.length(); ++i)
+    float velocity;
+    for (int i = 1; i < GetTrajectoryRef().length(); ++i)
     {
-        displacement = traj[i] - traj[i-1];
-        int timeStep = stepTime[i] - stepTime[i-1];
-        velocity = MS_SECOND*displacement/timeStep;
+        displacement = GetTrajectoryRef()[i] - GetTrajectoryRef()[i-1];
+        int timeStep = GetStepTimeRef()[i] - GetStepTimeRef()[i-1];
+        velocity = MS_SECOND*displacement.length()/timeStep;
         GetVelocityRef().append(velocity);
     }
     GetVelocityRef()[0] = GetVelocityRef()[1];
@@ -169,7 +167,7 @@ void Atom::PrintAtom()
     *out << GetParentResidueID() << " " << GetParentResidue();
     *out << " " << GetAtomName() << endl;
     QVector<QVector3D> traj = GetTrajectoryRef();
-    QVector<QVector3D> vel = GetVelocityRef();
+    QVector<float> vel = GetVelocityRef();
     QVector<float> pathLength = GetPathLengthRef();
     QVector<float> pathCurvature = GetPathCurvatureRef();
     QVector<int> stepTime = GetStepTimeRef();
@@ -181,10 +179,7 @@ void Atom::PrintAtom()
         }
         if (!vel.isEmpty())
         {
-            for (int j = 0; j < Atom::DIMENSIONS; ++j)
-            {
-                *out << vel[i][j] << '\t';
-            }
+            *out << vel[i] << '\t';
         }
         if (!pathLength.isEmpty())
         {
@@ -209,7 +204,7 @@ void Atom::PrintAtomFrame(int frame)
     *out << GetParentResidueID() << " " << GetParentResidue();
     *out << " " << GetAtomName() << " Frame = " << frame << endl;
     QVector<QVector3D> traj = GetTrajectoryRef();
-    QVector<QVector3D> vel = GetVelocityRef();
+    QVector<float> vel = GetVelocityRef();
     QVector<float> pathLength = GetPathLengthRef();
     QVector<float> pathCurvature = GetPathCurvatureRef();
     QVector<int> stepTime = GetStepTimeRef();
@@ -220,10 +215,7 @@ void Atom::PrintAtomFrame(int frame)
     }
     if (!vel.isEmpty())
     {
-        for (int j = 0; j < Atom::DIMENSIONS; ++j)
-        {
-            *out << vel[frame][j] << '\t';
-        }
+        *out << vel[frame] << '\t';
     }
     if (!pathLength.isEmpty())
     {

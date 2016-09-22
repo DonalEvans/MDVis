@@ -76,11 +76,11 @@ public:
     QVector<QVector3D>& GetTrajectoryRef();
 
     /**
-     * @brief Getter for the velocity vector for this Atom.
-     * @return A QVector containing the 3D velocity of the Atom at each
+     * @brief Getter for the velocity magnitude for this Atom.
+     * @return A QVector containing the velocity magnitude of the Atom at each
      * time step.
      */
-    QVector<QVector3D>& GetVelocityRef();
+    QVector<float>& GetVelocityRef();
 
     /**
      * @brief Empty constructor.
@@ -196,10 +196,10 @@ private:
 
     /**
      * @brief Setter for the velocity vector for this Atom.
-     * @param velocity A QVector of 3D velocity values for the atom at
+     * @param velocity A QVector of velocity magnitude values for the atom at
      * each time step.
      */
-    void setVelocity(QVector<QVector3D> velocity);
+    void setVelocity(QVector<float> velocity);
 
     /**
      * @brief m_AtomName The name of the Atom.
@@ -267,7 +267,7 @@ private:
      * @brief A QVector containing the 3D velocity of the Atom at each
      * time step.
      */
-    QVector<QVector3D> m_Velocity;
+    QVector<float> m_Velocity;
 
     /**
      * @brief The number of miliseconds in a second, used for scaling

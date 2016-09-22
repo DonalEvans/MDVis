@@ -22,7 +22,7 @@ class ColourLegend : public QWidget
 
 public:
     /**
-     * @brief Sets the colour map for this object to the one in @map.
+     * @brief Sets the colour map for this object to the one in map.
      * @param map A QVector of colours, as QVector3D RBG float values, from 0-1.
      */
     void SetColourMap(QVector<QVector3D> map);

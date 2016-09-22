@@ -127,7 +127,7 @@ public:
   private:
     /**
      * @brief True if the transformation matrix has been changed since the last
-     * time @ToMatrix() was called, false otherwise.
+     * time ToMatrix() was called, false otherwise.
      */
     bool m_Changed;
 

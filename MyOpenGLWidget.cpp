@@ -82,12 +82,12 @@ void MyOpenGLWidget::setRotate(bool rotating)
     m_IsRotating = rotating;
 }
 
-QVector<QVector<Vertex>>& MyOpenGLWidget::GetVerticesRef()
+QVector<QVector<Vertex> >& MyOpenGLWidget::GetVerticesRef()
 {
     return m_Vertices;
 }
 
-void MyOpenGLWidget::SetVertices(QVector<QVector<Vertex>> vertices)
+void MyOpenGLWidget::SetVertices(QVector<QVector<Vertex> > vertices)
 {
     m_Vertices = vertices;
     CreateTrajBuffer();

@@ -27,14 +27,14 @@ public:
      * @brief Getter for a reference to the Vertex vector.
      * @return A reference to the Vertex vector.
      */
-    QVector<QVector<Vertex>>& GetVerticesRef();
+    QVector<QVector<Vertex> >& GetVerticesRef();
 
     /**
      * @brief Setter for the Vertex data that is to be used in drawing.
      * @param vertices A 2-dimensional QVector containing @Vertex objects for
      * each time step, for each atom.
      */
-    void SetVertices(QVector<QVector<Vertex>> vertices);
+    void SetVertices(QVector<QVector<Vertex> > vertices);
 
     /**
      * @brief Setter for the zoom level.
@@ -49,7 +49,7 @@ public:
     MyOpenGLWidget(QWidget* parent);
 
     /**
-     * @brief Appends a QVector of @Vertex objects to @m_Vertices.
+     * @brief Appends a QVector of @Vertex objects to the vertex vector.
      * @param vertices The QVector of @Vertex objects to be appended.
      */
     void AddVertices(QVector<Vertex> vertices);
@@ -160,14 +160,14 @@ protected:
 private:
     /**
      * @brief Getter for the far flipping plane.
-     * @return The distance from the camera to teh far clipping plane
+     * @return The distance from the camera to the far clipping plane
      * as a float.
      */
     float getFar();
 
     /**
      * @brief Setter for the far clipping plane.
-     * @param newFar The distance from the camera to teh far clipping plane
+     * @param newFar The distance from the camera to the far clipping plane
      * as a float.
      */
     void setFar(float newFar);
@@ -365,7 +365,7 @@ private:
     /**
      * @brief The @Vertex objects for each @Atom at each time step of the data.
      */
-    QVector<QVector<Vertex>> m_Vertices;
+    QVector<QVector<Vertex> > m_Vertices;
 
     /**
      * @brief The uniform location within the shader files of the world to

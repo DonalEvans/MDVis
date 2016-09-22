@@ -141,6 +141,10 @@ void MainWindow::mapColour()
     }
     printString("Mapping colour to atoms...", MS_SECOND);
     float range = m_UserMapMax - m_UserMapMin;
+    if (range == 0)
+    {
+        range = 1;
+    }
     float mapValue;
     int mapIndex;
     int map = ui->m_ColourSpinBox->value();
@@ -171,7 +175,7 @@ void MainWindow::mapColour()
         {
             for (int j = 0; j < ui->m_OpenGLWidget->GetVerticesRef()[i].length(); ++j)
             {
-                mapValue = m_AtomVector[i]->GetVelocityRef()[j].length() - m_RealMapMin;
+                mapValue = m_AtomVector[i]->GetVelocityRef()[j] - m_RealMapMin;
                 mapIndex = m_ColourMaps.GetMap(map).length()*(mapValue/range);
                 ui->m_OpenGLWidget->GetVerticesRef()[i][j].SetColour(m_ColourMaps.GetColour(map,mapIndex));
             }
@@ -208,7 +212,7 @@ void MainWindow::on_loadDataButton_clicked()
         m_AtomVector.clear();
         m_AtomVector.squeeze();
         setAtomVector(m_FileReader->GetAtomVectorRef());
-//        printString("Files Loaded", MS_SECOND);
+        printString("Files Loaded", MS_SECOND);
         int totalFrames = m_AtomVector[0]->GetTrajectoryRef().length();
         ui->m_FrameBox->setMaximum(totalFrames - 1);
         sort();
@@ -254,7 +258,7 @@ void MainWindow::on_m_RefreshRateSlider_valueChanged(int value)
 
 void MainWindow::on_m_ResetLegendScale_released()
 {
-    if (m_RealMapMax == -INFINITY || m_RealMapMin == INFINITY)
+    if (m_RealMapMax == -std::numeric_limits<float>::min() || m_RealMapMin == std::numeric_limits<float>::min())
     {
         return;
     }
@@ -313,12 +317,12 @@ void MainWindow::setTimerStatus(bool running)
 void MainWindow::sort()
 {
     struct {
-            bool operator()(Atom* atom1, Atom* atom2)
-            {
-                return atom1->GetPathLengthRef().last()
-                     < atom2->GetPathLengthRef().last();
-            }
-        } compare;
+        bool operator()(Atom* atom1, Atom* atom2)
+        {
+            return atom1->GetPathLengthRef().last()
+                 < atom2->GetPathLengthRef().last();
+        }
+    } compare;
     m_FileReader->CalculatePathLength();
     std::sort(m_AtomVector.begin(), m_AtomVector.end(), compare);
 }

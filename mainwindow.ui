@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>940</width>
-    <height>657</height>
+    <width>1000</width>
+    <height>800</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -259,6 +259,19 @@ Position</string>
          </widget>
         </item>
         <item>
+         <spacer name="horizontalSpacer_5">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
          <layout class="QVBoxLayout" name="verticalLayout_11">
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout">
@@ -334,6 +347,12 @@ Position</string>
             </item>
             <item>
              <widget class="QComboBox" name="m_Mapping">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
               <property name="minimumSize">
                <size>
                 <width>120</width>
@@ -527,7 +546,7 @@ Position</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>940</width>
+     <width>1000</width>
      <height>21</height>
     </rect>
    </property>

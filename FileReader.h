@@ -16,6 +16,7 @@
 #include "Residue.h"
 #include <QObject>
 #include <QVector3D>
+#include <limits>
 
 class FileReader : public QObject
 {
@@ -30,42 +31,42 @@ public:
 
     /**
      * @brief Getter for the maximum path curvature value among the atoms
-     * in @m_AtomVector.
+     * in the atom vector.
      * @return The value of the maximum path curvature, as a float.
      */
     float GetMaxPathCurvature();
 
     /**
      * @brief Getter for the maximum path length value among the atoms
-     * in @m_AtomVector.
+     * in the atom vector.
      * @return The value of the maximum path length, as a float.
      */
     float GetMaxPathLength();
 
     /**
      * @brief Getter for the maximum velocity value among the atoms
-     * in @m_AtomVector.
+     * in the atom vector.
      * @return The value of the maximum velocity, as a float.
      */
     float GetMaxVelocity();
 
     /**
      * @brief Getter for the minimum path curvature value among the atoms
-     * in @m_AtomVector.
+     * in the atom vector.
      * @return The value of the minimum path curvature, as a float.
      */
     float GetMinPathCurvature();
 
     /**
      * @brief Getter for the minimum path length value among the atoms
-     * in @m_AtomVector.
+     * in the atom vector.
      * @return The value of the minimum path length, as a float.
      */
     float GetMinPathLength();
 
     /**
      * @brief Getter for the minimum velocity value among the atoms
-     * in @m_AtomVector.
+     * in the atom vector.
      * @return The value of the minimum velocity, as a float.
      */
     float GetMinVelocity();
@@ -96,17 +97,17 @@ public:
     FileReader();
 
     /**
-     * @brief Calculates the path curvature for every @Atom in @m_AtomVector.
+     * @brief Calculates the path curvature for every @Atom in the atom vector.
      */
     void CalculatePathCurvature();
 
     /**
-     * @brief Calculates the path length for every @Atom in @m_AtomVector.
+     * @brief Calculates the path length for every @Atom in the atom vector.
      */
     void CalculatePathLength();
 
     /**
-     * @brief Calculates the velocity for every @Atom in @m_AtomVector.
+     * @brief Calculates the velocity for every @Atom in the atom vector.
      */
     void CalculateVelocity();
 
@@ -238,37 +239,37 @@ private:
 
     /**
      * @brief The value of the maximum path curvature value among the atoms
-     * in @m_AtomVector, as a float.
+     * in the atom vector, as a float.
      */
     float m_MaxPathCurvature = -INFINITY;
 
     /**
      * @brief The value of the maximum path length value among the atoms
-     * in @m_AtomVector, as a float.
+     * in the atom vector, as a float.
      */
     float m_MaxPathLength = -INFINITY;
 
     /**
      * @brief The value of the maximum velocity value among the atoms
-     * in @m_AtomVector, as a float.
+     * in the atom vector, as a float.
      */
     float m_MaxVelocity = -INFINITY;
 
     /**
      * @brief The value of the minimum path curvature value among the atoms
-     * in @m_AtomVector, as a float.
+     * in the atom vector, as a float.
      */
     float m_MinPathCurvature = INFINITY;
 
     /**
      * @brief The value of the minimum path length value among the atoms
-     * in @m_AtomVector, as a float.
+     * in the atom vector, as a float.
      */
     float m_MinPathLength = INFINITY;
 
     /**
      * @brief The value of the minimum velocity value among the atoms
-     * in @m_AtomVector, as a float.
+     * in the atom vector, as a float.
      */
     float m_MinVelocity = INFINITY;
 
@@ -279,13 +280,13 @@ private:
 
     /**
      * @brief Flag signifying if the path curvature has already been calculated for
-     * the atoms in @m_AtomVector or not.
+     * the atoms in the atom vector or not.
      */
     bool m_PathCurvature;
 
     /**
      * @brief Flag signifying if the path length has already been calculated for
-     * the atoms in @m_AtomVector or not.
+     * the atoms in the atom vector or not.
      */
     bool m_PathLength;
 
@@ -301,7 +302,7 @@ private:
 
     /**
      * @brief Flag signifying if the velocity has already been calculated for
-     * the atoms in @m_AtomVector or not.
+     * the atoms in the atom vector or not.
      */
     bool m_Velocity;
 
